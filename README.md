@@ -5,7 +5,7 @@
 ---
 
 ## 🚀 Características Principales
-* **Soporte Multi-OS:** Compatible con Debian, Ubuntu, Oracle Linux, RHEL y Arch.
+* **Soporte Multi-OS:** Compatible con Debian, Fedora, CentOS, Arch
 * **Smart Scraper:** Validación de versiones en tiempo real para evitar errores de dependencias.
 * **Seguridad Integrada:** Configuración automática de Firewall (UFW/Firewalld) y políticas de SELinux.
 
