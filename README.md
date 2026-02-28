@@ -29,7 +29,7 @@ Se encarga de repos/versions, dependencias, DB/Web, hardening, puertos y modo Do
 - [Características](#-características)
 - [Sistemas soportados](#-sistemas-soportados)
 - [Requisitos](#-requisitos)
-- [Instalación rápida](#instalación-rápida)
+- [Instalación rápida](##instalacion-rapida)
 - [Modos de despliegue](#-modos-de-despliegue)
 - [Puertos](#-puertos)
 - [Logs](#-logs)
@@ -71,7 +71,7 @@ Según modo (nativo o Docker), soporta:
 
 ---
 
-## 🛠️ Instalación rápida
+## 🛠️ Instalación rapida
 
 ```bash
 git clone https://github.com/FW-MechBoy/zabbix-auto-installer.git
