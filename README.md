@@ -73,8 +73,6 @@ Según modo (nativo o Docker), soporta:
 
 ## 🛠️ Instalación rápida
 
-### Opción recomendada (copy/paste)
-
 git clone https://github.com/micklo5188/zabbix-auto-installer.git
 
 cd zabbix-auto-installer
