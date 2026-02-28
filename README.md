@@ -29,7 +29,7 @@ Se encarga de repos/versions, dependencias, DB/Web, hardening, puertos y modo Do
 - [Características](#-características)
 - [Sistemas soportados](#-sistemas-soportados)
 - [Requisitos](#-requisitos)
-- [Instalación rápida](#-instalación-rápida)
+- [Instalación rápida](#instalación-rápida)
 - [Modos de despliegue](#-modos-de-despliegue)
 - [Puertos](#-puertos)
 - [Logs](#-logs)
