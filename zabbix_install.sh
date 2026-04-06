@@ -577,7 +577,7 @@ select_options() {
 
     msg "${BOLD}Seleccione el tipo de despliegue de Zabbix:${N}"
     echo -e "  ${C}[1]${N} Zabbix Server Nativo (Frontend + DB + Server)"
-    echo -e "  ${C}[2]${N} Zabbix Proxy Nativo (Nodo intermediario con SQLite3)"
+    echo -e "  ${C}[2]${N} Zabbix Proxy Nativo (Nodo intermediario)"
     echo -e "  ${C}[3]${N} Zabbix Agent Nativo (Cliente de monitoreo)"
     echo -e "  ${C}[4]${N} Zabbix Containers (Docker Hub / Compose)"
 
@@ -707,6 +707,38 @@ select_options() {
         echo ""
     fi
 
+    if [ "$DEPLOY_TYPE" == "2" ]; then
+        msg "${BOLD}Configuración de Base de Datos del Proxy:${N}"
+        echo -e "  ${C}[1]${N} SQLite3"
+        echo -e "  ${C}[2]${N} MySQL / MariaDB"
+        echo -e "  ${C}[3]${N} PostgreSQL"
+        while true; do
+            read -r -p "  👉 Selecciona Motor DB del Proxy: " OPC_PDB
+            OPC_PDB="$(sanitize_num "$OPC_PDB")"
+            [[ "$OPC_PDB" =~ ^[1-3]$ ]] && break
+        done
+        case "$OPC_PDB" in
+            1) DB_TYPE="sqlite3" ;;
+            2) DB_TYPE="mysql" ;;
+            3) DB_TYPE="pgsql" ;;
+        esac
+        echo ""
+
+        if [ "$DB_TYPE" != "sqlite3" ]; then
+            msg "${BOLD}Seguridad de Base de Datos:${N}"
+            while true; do
+                read -s -p "  🔑 Crea contraseña para 'zabbix': " Z_PASS1; echo
+                read -s -p "  🔑 Confirma la contraseña: " Z_PASS2; echo
+                if [ "$Z_PASS1" == "$Z_PASS2" ] && [ -n "$Z_PASS1" ]; then
+                    Z_PASS="$Z_PASS1"; break
+                else
+                    msg "$R" "  ❌ Las contraseñas no coinciden. Reintente."
+                fi
+            done
+            echo ""
+        fi
+    fi
+
     if [ "$DEPLOY_TYPE" == "2" ] || [ "$DEPLOY_TYPE" == "3" ] || [[ "$DEPLOY_TYPE" == "4" && "$DOCKER_CAT" != "1" ]]; then
         msg "${BOLD}Configuración del Nodo:${N}"
         read -r -p "  🌐 Ingrese la IP del Zabbix Server Maestro: " ZBX_SERVER_IP
@@ -812,6 +844,120 @@ EOF
     fi
 }
 
+proxy_db_label() {
+    case "$DB_TYPE" in
+        sqlite3) echo "SQLite3" ;;
+        mysql)   echo "MySQL/MariaDB" ;;
+        pgsql)   echo "PostgreSQL" ;;
+        *)       echo "Desconocida" ;;
+    esac
+}
+
+proxy_service_name() {
+    if [ "$PKG" == "pacman" ]; then
+        case "$DB_TYPE" in
+            mysql) echo "zabbix-proxy-mysql" ;;
+            pgsql) echo "zabbix-proxy-pgsql" ;;
+            sqlite3) echo "zabbix-proxy-sqlite" ;;
+            *) echo "zabbix-proxy-sqlite" ;;
+        esac
+    else
+        echo "zabbix-proxy"
+    fi
+}
+
+proxy_db_owner_user() {
+    if [ "$PKG" == "pacman" ]; then echo "zabbix-proxy"; else echo "zabbix"; fi
+}
+
+proxy_db_owner_group() {
+    if [ "$PKG" == "pacman" ]; then echo "zabbix-proxy"; else echo "zabbix"; fi
+}
+
+proxy_sqlite_db_path() {
+    if [ "$PKG" == "pacman" ]; then
+        echo "/var/lib/zabbix-proxy/zabbix_proxy.db"
+    else
+        echo "/var/lib/zabbix/zabbix_proxy.db"
+    fi
+}
+
+set_cfg_key() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+    local esc
+
+    esc=$(printf '%s' "$value" | sed 's/[\\/&]/\\&/g')
+    if grep -Eq "^[#[:space:]]*${key}=" "$file"; then
+        sed -i -E "s|^[#[:space:]]*${key}=.*|${key}=${esc}|" "$file"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$file"
+    fi
+}
+
+remove_cfg_key() {
+    local file="$1"
+    local key="$2"
+    sed -i -E "/^[#[:space:]]*${key}=.*/d" "$file"
+}
+
+find_proxy_schema_path() {
+    local db="$1"
+    local p
+    for p in \
+        "/usr/share/zabbix/sql-scripts/${db}/proxy.sql.gz" \
+        "/usr/share/zabbix/sql-scripts/${db}/proxy.sql" \
+        "/usr/share/zabbix-sql-scripts/${db}/proxy.sql.gz" \
+        "/usr/share/zabbix-sql-scripts/${db}/proxy.sql" \
+        "/usr/share/doc/zabbix-proxy-${db}/schema.sql.gz" \
+        "/usr/share/doc/packages/zabbix-proxy-${db}/schema.sql.gz" \
+        "/usr/share/zabbix-proxy/${db}/schema.sql" \
+        "/usr/share/zabbix-proxy/${db}/proxy.sql"
+    do
+        [ -f "$p" ] && { echo "$p"; return 0; }
+    done
+
+    if [ "$db" == "sqlite3" ]; then
+        find /usr/share -type f \( -name 'proxy.sql.gz' -o -name 'schema.sql.gz' -o -name 'proxy.sql' -o -name 'schema.sql' \) 2>/dev/null | grep -E '/(sqlite3|zabbix-proxy/sqlite3)/' | head -n 1
+    elif [ "$db" == "mysql" ]; then
+        find /usr/share -type f \( -name 'proxy.sql.gz' -o -name 'schema.sql.gz' -o -name 'proxy.sql' -o -name 'schema.sql' \) 2>/dev/null | grep -E '/(mysql|zabbix-proxy/mysql)/' | head -n 1
+    else
+        find /usr/share -type f \( -name 'proxy.sql.gz' -o -name 'schema.sql.gz' -o -name 'proxy.sql' -o -name 'schema.sql' \) 2>/dev/null | grep -E '/(postgresql|pgsql|zabbix-proxy/postgresql)/' | head -n 1
+    fi
+}
+
+import_proxy_schema() {
+    local schema="$1"
+    local db="$2"
+    local target="$3"
+
+    case "$db" in
+        sqlite3)
+            if echo "$schema" | grep -q '\\.gz$'; then
+                zcat "$schema" | sqlite3 "$target"
+            else
+                sqlite3 "$target" < "$schema"
+            fi
+            ;;
+        mysql)
+            if echo "$schema" | grep -q '\\.gz$'; then
+                zcat "$schema" | mysql -uzabbix -p"$Z_PASS" "$target"
+            else
+                mysql -uzabbix -p"$Z_PASS" "$target" < "$schema"
+            fi
+            ;;
+        pgsql)
+            if echo "$schema" | grep -q '\\.gz$'; then
+                PGPASSWORD="$Z_PASS" zcat "$schema" | psql -h localhost -U zabbix -d "$target"
+            else
+                PGPASSWORD="$Z_PASS" psql -h localhost -U zabbix -d "$target" < "$schema"
+            fi
+            ;;
+        *) return 1 ;;
+    esac
+}
+
 task_packages() {
     local OPT=""
     [[ "$PKG" == "dnf" ]] && OPT="--allowerasing"
@@ -836,7 +982,19 @@ task_packages() {
         fi
 
         if [ "$DEPLOY_TYPE" == "2" ]; then
-            apt install -y zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+            case "$DB_TYPE" in
+                sqlite3)
+                    apt install -y zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+                    ;;
+                mysql)
+                    apt install -y mariadb-server mariadb-client || return 1
+                    apt install -y zabbix-proxy-mysql zabbix-sql-scripts || return 1
+                    ;;
+                pgsql)
+                    apt install -y postgresql || return 1
+                    apt install -y zabbix-proxy-pgsql zabbix-sql-scripts || return 1
+                    ;;
+            esac
         fi
 
         if [ "$DEPLOY_TYPE" == "3" ]; then
@@ -850,7 +1008,17 @@ task_packages() {
             zypper --non-interactive install "zabbix-server-${DB_TYPE}" "zabbix-web-${DB_TYPE}" "zabbix-${WEB_TYPE}-conf" zabbix-sql-scripts zabbix-agent || return 1
         fi
         if [ "$DEPLOY_TYPE" == "2" ]; then
-            zypper --non-interactive install zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+            case "$DB_TYPE" in
+                sqlite3)
+                    zypper --non-interactive install zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+                    ;;
+                mysql)
+                    zypper --non-interactive install mariadb mariadb-client zabbix-proxy-mysql zabbix-sql-scripts || return 1
+                    ;;
+                pgsql)
+                    zypper --non-interactive install postgresql postgresql-server zabbix-proxy-pgsql zabbix-sql-scripts || return 1
+                    ;;
+            esac
         fi
         if [ "$DEPLOY_TYPE" == "3" ]; then
             zypper --non-interactive install zabbix-agent || return 1
@@ -858,7 +1026,19 @@ task_packages() {
 
     elif [ "$PKG" == "pacman" ]; then
         if [ "$DEPLOY_TYPE" == "1" ]; then pacman -Sy --noconfirm zabbix-server zabbix-frontend-php zabbix-agent mariadb apache php-apache || return 1; fi
-        if [ "$DEPLOY_TYPE" == "2" ]; then pacman -Sy --noconfirm zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite || return 1; fi
+        if [ "$DEPLOY_TYPE" == "2" ]; then
+            case "$DB_TYPE" in
+                sqlite3)
+                    pacman -Sy --noconfirm zabbix-proxy sqlite || return 1
+                    ;;
+                mysql)
+                    pacman -Sy --noconfirm zabbix-proxy mariadb || return 1
+                    ;;
+                pgsql)
+                    pacman -Sy --noconfirm zabbix-proxy postgresql || return 1
+                    ;;
+            esac
+        fi
         if [ "$DEPLOY_TYPE" == "3" ]; then pacman -Sy --noconfirm zabbix-agent || return 1; fi
 
     else
@@ -868,7 +1048,17 @@ task_packages() {
             $PKG install -y $OPT "zabbix-server-${DB_TYPE}" "zabbix-web-${DB_TYPE}" "zabbix-${WEB_TYPE}-conf" zabbix-sql-scripts zabbix-agent || return 1
         fi
         if [ "$DEPLOY_TYPE" == "2" ]; then
-            $PKG install -y $OPT zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+            case "$DB_TYPE" in
+                sqlite3)
+                    $PKG install -y $OPT zabbix-proxy-sqlite3 zabbix-sql-scripts sqlite3 || return 1
+                    ;;
+                mysql)
+                    $PKG install -y $OPT mariadb-server mariadb zabbix-proxy-mysql zabbix-sql-scripts || return 1
+                    ;;
+                pgsql)
+                    $PKG install -y $OPT postgresql-server postgresql zabbix-proxy-pgsql zabbix-sql-scripts || return 1
+                    ;;
+            esac
         fi
         if [ "$DEPLOY_TYPE" == "3" ]; then
             $PKG install -y $OPT zabbix-agent || return 1
@@ -936,22 +1126,102 @@ task_database() {
 }
 
 task_proxy_db() {
-    command -v sqlite3 >/dev/null 2>&1 || return 1
-    mkdir -p /var/lib/zabbix
-    chown zabbix:zabbix /var/lib/zabbix || true
-    local SQL_PATH
-    SQL_PATH=$(find /usr/share -name "proxy.sql.gz" 2>/dev/null | grep -E "/sqlite3/" | head -n 1 || true)
-    [ -z "$SQL_PATH" ] && return 1
-    zcat "$SQL_PATH" | sqlite3 /var/lib/zabbix/zabbix_proxy.db || return 1
-    chown zabbix:zabbix /var/lib/zabbix/zabbix_proxy.db || true
     local CONF_PATH
+    local SCHEMA_PATH
+    local DB_FILE
+    local DB_NAME="zabbix_proxy"
+    local PROXY_SVC
+    local OWNER_USER
+    local OWNER_GROUP
+
     CONF_PATH=$(find /etc -name "zabbix_proxy.conf" 2>/dev/null | head -n 1 || true)
     [ -z "$CONF_PATH" ] && return 1
-    sed -i "s/^Server=.*/Server=$ZBX_SERVER_IP/g" "$CONF_PATH"
-    if [ -n "$ZBX_HOSTNAME" ]; then sed -i "s/^Hostname=.*/Hostname=$ZBX_HOSTNAME/g" "$CONF_PATH"
-    else sed -i "s/^Hostname=.*/Hostname=$(hostname)/g" "$CONF_PATH"; fi
-    sed -i "s|^DBName=.*|DBName=/var/lib/zabbix/zabbix_proxy.db|g" "$CONF_PATH"
-    svc_restart_enable zabbix-proxy
+
+    PROXY_SVC="$(proxy_service_name)"
+    OWNER_USER="$(proxy_db_owner_user)"
+    OWNER_GROUP="$(proxy_db_owner_group)"
+
+    SCHEMA_PATH="$(find_proxy_schema_path "$DB_TYPE")"
+    [ -z "$SCHEMA_PATH" ] && return 1
+
+    if have_systemd; then
+        systemctl stop "$PROXY_SVC" >/dev/null 2>&1 || true
+        systemctl stop zabbix-proxy >/dev/null 2>&1 || true
+    elif command -v service >/dev/null 2>&1; then
+        service "$PROXY_SVC" stop >/dev/null 2>&1 || true
+        service zabbix-proxy stop >/dev/null 2>&1 || true
+    fi
+
+    set_cfg_key "$CONF_PATH" "Server" "$ZBX_SERVER_IP"
+    if [ -n "$ZBX_HOSTNAME" ]; then
+        set_cfg_key "$CONF_PATH" "Hostname" "$ZBX_HOSTNAME"
+    else
+        set_cfg_key "$CONF_PATH" "Hostname" "$(hostname)"
+    fi
+
+    case "$DB_TYPE" in
+        sqlite3)
+            DB_FILE="$(proxy_sqlite_db_path)"
+            mkdir -p "$(dirname "$DB_FILE")"
+            chown "$OWNER_USER:$OWNER_GROUP" "$(dirname "$DB_FILE")" >/dev/null 2>&1 || true
+            chmod 750 "$(dirname "$DB_FILE")" >/dev/null 2>&1 || true
+
+            rm -f "$DB_FILE"
+            touch "$DB_FILE"
+            chown "$OWNER_USER:$OWNER_GROUP" "$DB_FILE" >/dev/null 2>&1 || true
+            chmod 640 "$DB_FILE" >/dev/null 2>&1 || true
+
+            command -v sqlite3 >/dev/null 2>&1 || return 1
+            import_proxy_schema "$SCHEMA_PATH" "sqlite3" "$DB_FILE" || return 1
+
+            set_cfg_key "$CONF_PATH" "DBName" "$DB_FILE"
+            remove_cfg_key "$CONF_PATH" "DBHost"
+            remove_cfg_key "$CONF_PATH" "DBUser"
+            remove_cfg_key "$CONF_PATH" "DBPassword"
+            ;;
+        mysql)
+            command -v mysql >/dev/null 2>&1 || return 1
+            svc_enable_start mariadb || svc_enable_start mysql || true
+            sleep 2
+            mysql --protocol=socket -uroot -e "SELECT 1" >/dev/null 2>&1 || return 1
+
+            mysql -uroot -e "DROP DATABASE IF EXISTS ${DB_NAME}; CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;" || return 1
+            mysql -uroot -e "DROP USER IF EXISTS 'zabbix'@'localhost'; CREATE USER 'zabbix'@'localhost' IDENTIFIED BY '${Z_PASS}';" || return 1
+            mysql -uroot -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO 'zabbix'@'localhost'; FLUSH PRIVILEGES;" || return 1
+            import_proxy_schema "$SCHEMA_PATH" "mysql" "$DB_NAME" || return 1
+
+            set_cfg_key "$CONF_PATH" "DBHost" "localhost"
+            set_cfg_key "$CONF_PATH" "DBName" "$DB_NAME"
+            set_cfg_key "$CONF_PATH" "DBUser" "zabbix"
+            set_cfg_key "$CONF_PATH" "DBPassword" "$Z_PASS"
+            ;;
+        pgsql)
+            command -v psql >/dev/null 2>&1 || return 1
+            svc_enable_start postgresql || true
+            sleep 2
+
+            if command -v runuser >/dev/null 2>&1; then
+                runuser -u postgres -- psql -tc "SELECT 1 FROM pg_roles WHERE rolname='zabbix'" | grep -q 1 || runuser -u postgres -- psql -c "CREATE USER zabbix WITH PASSWORD '${Z_PASS}';" || return 1
+                runuser -u postgres -- psql -tc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1 || runuser -u postgres -- createdb -O zabbix -E UTF8 "$DB_NAME" || return 1
+            else
+                su - postgres -c "psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='zabbix'\" | grep -q 1 || psql -c \"CREATE USER zabbix WITH PASSWORD '${Z_PASS}';\"" || return 1
+                su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\" | grep -q 1 || createdb -O zabbix -E UTF8 ${DB_NAME}" || return 1
+            fi
+
+            import_proxy_schema "$SCHEMA_PATH" "pgsql" "$DB_NAME" || return 1
+
+            set_cfg_key "$CONF_PATH" "DBHost" "localhost"
+            set_cfg_key "$CONF_PATH" "DBName" "$DB_NAME"
+            set_cfg_key "$CONF_PATH" "DBUser" "zabbix"
+            set_cfg_key "$CONF_PATH" "DBPassword" "$Z_PASS"
+            ;;
+        *) return 1 ;;
+    esac
+
+    svc_restart_enable "$PROXY_SVC" || return 1
+    if have_systemd; then
+        systemctl is-active --quiet "$PROXY_SVC" || return 1
+    fi
     return 0
 }
 
@@ -1442,7 +1712,7 @@ if [ "$DEPLOY_TYPE" == "1" ]; then
 elif [ "$DEPLOY_TYPE" == "2" ]; then
     task_progress_bar "Sincronizando repositorios y llaves GPG" task_repos
     task_progress_bar "Descargando e instalando dependencias" task_packages
-    task_progress_bar "Generando DB local y configurando Proxy" task_proxy_db
+    task_progress_bar "Inicializando BD y configurando Proxy" task_proxy_db
     task_progress_bar "Aplicando politicas de seguridad" task_security
 elif [ "$DEPLOY_TYPE" == "3" ]; then
     task_progress_bar "Sincronizando repositorios y llaves GPG" task_repos
@@ -1489,7 +1759,7 @@ if [ "$DEPLOY_TYPE" == "1" ]; then
     echo "  🔑 Clave Web:    ${Y}zabbix${N}"
 
 elif [ "$DEPLOY_TYPE" == "2" ]; then
-    echo "${G}  🖧 ¡ZABBIX PROXY (SQLite3) $Z_VER INSTALADO Y REPORTANDO A $ZBX_SERVER_IP!${N}"
+    echo "${G}  🖧 ¡ZABBIX PROXY ($(proxy_db_label)) $Z_VER INSTALADO Y REPORTANDO A $ZBX_SERVER_IP!${N}"
 
 elif [ "$DEPLOY_TYPE" == "3" ]; then
     echo "${G}  🛡️ ¡ZABBIX AGENT $Z_VER INSTALADO Y REPORTANDO A $ZBX_SERVER_IP!${N}"
