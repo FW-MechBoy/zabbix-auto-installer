@@ -1,56 +1,709 @@
- 
-Backing Up and Restoring BizTalk Server - BizTalk Server | Microsoft Learn
-Backing Up a Computer Running BizTalk Server - BizTalk Server | Microsoft Learn
-Learn more about: Backing Up and Restoring BizTalk Server
- 
-In addition to backing up the BizTalk Server databases, you should back up the following BizTalk Server components to ensure that you can recover BizTalk Server after a hardware failure:
-BizTalk Server configuration
-Enterprise Single Sign-On (SSO) master secret
-Business Activity Monitoring (BAM) portal (not required unless you're using BAM)
-BizTalk applications
- 
-Backing Up and Restoring BizTalk Server - BizTalk Server | Microsoft Learn
-Learn more about: Backing Up and Restoring BizTalk Server
- 
-Por si podemos entre todos hacer un brainstorming de como se podría hacer con pre y post etc
- 
-Actualmente está usando esto:
- 
+$BasePath = "C:\BizTalkBackup"
+New-Item -ItemType Directory -Path $BasePath -Force | Out-Null
+
+@'
+#requires -version 5.1
+<#
+    BizTalk-FullBackup.ps1
+
+    Backup integral BizTalk Server:
+    - Detecta SQL Server / instancia
+    - Ejecuta backup SQL existente si está disponible
+    - Exporta aplicaciones BizTalk MSI
+    - Exporta bindings XML
+    - Genera inventario de hosts, host instances, send ports, receive locations
+    - Genera inventario de servicios BizTalk / SSO
+    - Genera inventario de SQL Agent Jobs
+    - Genera inventario de certificados
+    - Backup opcional de SSO Master Secret
+    - Genera manifest con SHA256
+    - Comprime resultado en ZIP
+    - Aplica retención
+
+    Ejecutar como Administrador en servidor BizTalk.
+#>
+
+param(
+    [string]$SqlServer = "",
+    [string]$BizTalkMgmtDb = "BizTalkMgmtDb",
+    [string]$BackupRoot = "G:\BizTalkDBs\Backup\BizTalkFull",
+    [string]$ExistingDbBackupSql = "G:\BizTalkDBs\Backup\Biztalk_Database_Backups.sql",
+    [int]$RetentionDays = 32,
+    [switch]$BackupSsoSecret,
+    [switch]$SkipMsiExport
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+function Assert-Administrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+
+    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw "Este script debe ejecutarse como Administrador."
+    }
+}
+
+function Write-Log {
+    param(
+        [Parameter(Mandatory)][string]$Message,
+        [ValidateSet("INFO", "WARN", "ERROR", "OK")]
+        [string]$Level = "INFO"
+    )
+
+    $line = "[{0}] [{1}] {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Level, $Message
+    Write-Host $line
+
+    if ($script:LogFile) {
+        Add-Content -Path $script:LogFile -Value $line -Encoding UTF8
+    }
+}
+
+function New-SafeFileName {
+    param([Parameter(Mandatory)][string]$Name)
+    return ($Name -replace '[\\/:*?"<>|]', '_').Trim()
+}
+
+function Get-DefaultSqlServerName {
+    $services = Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq "MSSQLSERVER" -or $_.Name -like "MSSQL`$*" } |
+        Sort-Object Name
+
+    $default = $services | Where-Object { $_.Name -eq "MSSQLSERVER" } | Select-Object -First 1
+
+    if ($default) {
+        return $env:COMPUTERNAME
+    }
+
+    $named = $services | Where-Object { $_.Name -like "MSSQL`$*" } | Select-Object -First 1
+
+    if ($named) {
+        $instance = $named.Name.Substring(6)
+        return "$env:COMPUTERNAME\$instance"
+    }
+
+    return $env:COMPUTERNAME
+}
+
+function Get-CommandPathOrThrow {
+    param(
+        [Parameter(Mandatory)][string]$CommandName,
+        [string[]]$SearchRoots = @()
+    )
+
+    $cmd = Get-Command $CommandName -ErrorAction SilentlyContinue
+    if ($cmd) {
+        return $cmd.Source
+    }
+
+    foreach ($root in $SearchRoots) {
+        if (Test-Path $root) {
+            $found = Get-ChildItem -Path $root -Filter $CommandName -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) {
+                return $found.FullName
+            }
+        }
+    }
+
+    throw "No se encontró $CommandName. Validar instalación de herramientas requeridas."
+}
+
+function Get-CommandPathOrNull {
+    param(
+        [Parameter(Mandatory)][string]$CommandName,
+        [string[]]$SearchRoots = @()
+    )
+
+    try {
+        return Get-CommandPathOrThrow -CommandName $CommandName -SearchRoots $SearchRoots
+    }
+    catch {
+        return $null
+    }
+}
+
+function Invoke-External {
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [string[]]$Arguments = @(),
+        [switch]$AllowFailure
+    )
+
+    Write-Log "Ejecutando: $FilePath $($Arguments -join ' ')"
+
+    $stdout = Join-Path $script:CurrentLogDir ("stdout_{0}.log" -f ([guid]::NewGuid().ToString("N")))
+    $stderr = Join-Path $script:CurrentLogDir ("stderr_{0}.log" -f ([guid]::NewGuid().ToString("N")))
+
+    $process = Start-Process `
+        -FilePath $FilePath `
+        -ArgumentList $Arguments `
+        -Wait `
+        -PassThru `
+        -NoNewWindow `
+        -RedirectStandardOutput $stdout `
+        -RedirectStandardError $stderr
+
+    $outText = if (Test-Path $stdout) { Get-Content $stdout -Raw -ErrorAction SilentlyContinue } else { "" }
+    $errText = if (Test-Path $stderr) { Get-Content $stderr -Raw -ErrorAction SilentlyContinue } else { "" }
+
+    if ($outText) {
+        Add-Content -Path $script:LogFile -Value $outText -Encoding UTF8
+    }
+
+    if ($errText) {
+        Add-Content -Path $script:LogFile -Value $errText -Encoding UTF8
+    }
+
+    if ($process.ExitCode -ne 0 -and -not $AllowFailure) {
+        throw "Falló comando: $FilePath. ExitCode=$($process.ExitCode). Error=$errText"
+    }
+
+    return @{
+        ExitCode = $process.ExitCode
+        StdOut   = $outText
+        StdErr   = $errText
+    }
+}
+
+function Invoke-SqlQuery {
+    param(
+        [Parameter(Mandatory)][string]$Query,
+        [string]$Database = "master",
+        [switch]$AllowFailure
+    )
+
+    $sqlcmd = Get-CommandPathOrThrow `
+        -CommandName "sqlcmd.exe" `
+        -SearchRoots @(
+            "${env:ProgramFiles}\Microsoft SQL Server",
+            "${env:ProgramFiles(x86)}\Microsoft SQL Server"
+        )
+
+    $args = @(
+        "-E",
+        "-S", $SqlServer,
+        "-d", $Database,
+        "-Q", "SET NOCOUNT ON; $Query",
+        "-h", "-1",
+        "-W",
+        "-b"
+    )
+
+    $result = Invoke-External -FilePath $sqlcmd -Arguments $args -AllowFailure:$AllowFailure
+    return $result.StdOut
+}
+
+function Test-PathNonEmpty {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        return $false
+    }
+
+    $item = Get-Item $Path
+    return $item.Length -gt 0
+}
+
+try {
+    Assert-Administrator
+
+    if ([string]::IsNullOrWhiteSpace($SqlServer)) {
+        $SqlServer = Get-DefaultSqlServerName
+    }
+
+    if (-not (Test-Path "G:\")) {
+        $BackupRoot = "C:\BizTalkBackup\Output"
+    }
+
+    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $script:CurrentBackupDir = Join-Path $BackupRoot $timestamp
+
+    $script:CurrentDbDir           = Join-Path $script:CurrentBackupDir "DB"
+    $script:CurrentSsoDir          = Join-Path $script:CurrentBackupDir "SSO"
+    $script:CurrentApplicationsDir = Join-Path $script:CurrentBackupDir "Applications"
+    $script:CurrentBindingsDir     = Join-Path $script:CurrentBackupDir "Bindings"
+    $script:CurrentPoliciesDir     = Join-Path $script:CurrentBackupDir "Policies"
+    $script:CurrentCertificatesDir = Join-Path $script:CurrentBackupDir "Certificates"
+    $script:CurrentConfigDir       = Join-Path $script:CurrentBackupDir "Config"
+    $script:CurrentLogDir          = Join-Path $script:CurrentBackupDir "Logs"
+
+    @(
+        $script:CurrentBackupDir,
+        $script:CurrentDbDir,
+        $script:CurrentSsoDir,
+        $script:CurrentApplicationsDir,
+        $script:CurrentBindingsDir,
+        $script:CurrentPoliciesDir,
+        $script:CurrentCertificatesDir,
+        $script:CurrentConfigDir,
+        $script:CurrentLogDir
+    ) | ForEach-Object {
+        New-Item -ItemType Directory -Path $_ -Force | Out-Null
+    }
+
+    $script:LogFile = Join-Path $script:CurrentLogDir "BizTalk_FullBackup_$timestamp.log"
+
+    Write-Log "Inicio de backup integral BizTalk." "INFO"
+    Write-Log "Servidor SQL detectado/usado: $SqlServer" "INFO"
+    Write-Log "BizTalkMgmtDb: $BizTalkMgmtDb" "INFO"
+    Write-Log "Destino backup: $script:CurrentBackupDir" "INFO"
+
+    Write-Log "=== PRECHECKS ==="
+
+    $sqlcmdPath = Get-CommandPathOrThrow `
+        -CommandName "sqlcmd.exe" `
+        -SearchRoots @(
+            "${env:ProgramFiles}\Microsoft SQL Server",
+            "${env:ProgramFiles(x86)}\Microsoft SQL Server"
+        )
+
+    Write-Log "sqlcmd encontrado: $sqlcmdPath" "OK"
+
+    $btsTaskPath = Get-CommandPathOrNull `
+        -CommandName "BTSTask.exe" `
+        -SearchRoots @(
+            "${env:ProgramFiles(x86)}\Microsoft BizTalk Server",
+            "${env:ProgramFiles}\Microsoft BizTalk Server"
+        )
+
+    if ($btsTaskPath) {
+        Write-Log "BTSTask encontrado: $btsTaskPath" "OK"
+    }
+    else {
+        Write-Log "BTSTask.exe no encontrado. Se omitirán exportaciones de aplicaciones y bindings." "WARN"
+    }
+
+    $ssoConfigPath = $null
+
+    if ($BackupSsoSecret) {
+        $ssoConfigPath = Get-CommandPathOrNull `
+            -CommandName "ssoconfig.exe" `
+            -SearchRoots @(
+                "${env:ProgramFiles}\Common Files\Enterprise Single Sign-On",
+                "${env:ProgramFiles(x86)}\Common Files\Enterprise Single Sign-On"
+            )
+
+        if ($ssoConfigPath) {
+            Write-Log "ssoconfig encontrado: $ssoConfigPath" "OK"
+        }
+        else {
+            Write-Log "ssoconfig.exe no encontrado. No se podrá respaldar SSO Master Secret." "WARN"
+        }
+    }
+
+    $drive = Split-Path $BackupRoot -Qualifier
+
+    if ($drive) {
+        $driveInfo = Get-PSDrive -Name ($drive.TrimEnd(":")) -ErrorAction SilentlyContinue
+
+        if ($driveInfo) {
+            $freeGb = [math]::Round($driveInfo.Free / 1GB, 2)
+            Write-Log "Espacio libre en $drive : $freeGb GB"
+
+            if ($freeGb -lt 20) {
+                Write-Log "Espacio libre menor a 20 GB. Validar capacidad." "WARN"
+            }
+        }
+    }
+
+    Write-Log "Validando conectividad SQL..."
+    Invoke-SqlQuery -Database "master" -Query "SELECT @@SERVERNAME;" | Out-Null
+    Write-Log "Conectividad SQL OK." "OK"
+
+    Write-Log "Validando existencia de $BizTalkMgmtDb..."
+    $dbExists = Invoke-SqlQuery -Database "master" -Query "SELECT name FROM sys.databases WHERE name = '$BizTalkMgmtDb';"
+
+    if (-not $dbExists.Trim()) {
+        Write-Log "No se encontró $BizTalkMgmtDb. Se continúa con inventario limitado." "WARN"
+    }
+    else {
+        Write-Log "$BizTalkMgmtDb encontrada." "OK"
+    }
+
+    Write-Log "=== INVENTARIO SERVICIOS ==="
+
+    $serviceInventoryPath = Join-Path $script:CurrentConfigDir "WindowsServices_BizTalk_SSO.csv"
+
+    Get-CimInstance Win32_Service |
+        Where-Object {
+            $_.Name -like "BTSSvc*" -or
+            $_.Name -like "*SSO*" -or
+            $_.DisplayName -like "*BizTalk*" -or
+            $_.DisplayName -like "*Enterprise Single Sign-On*"
+        } |
+        Select-Object Name, DisplayName, State, StartMode, StartName, PathName |
+        Export-Csv -Path $serviceInventoryPath -NoTypeInformation -Encoding UTF8
+
+    Write-Log "Inventario de servicios generado: $serviceInventoryPath" "OK"
+
+    Write-Log "=== BACKUP SQL BIZTALK ACTUAL ==="
+
+    if (Test-Path $ExistingDbBackupSql) {
+        $dbBackupLog = Join-Path $script:CurrentDbDir "BizTalk_Database_Backup_$timestamp.log"
+
+        Invoke-External `
+            -FilePath $sqlcmdPath `
+            -Arguments @(
+                "-E",
+                "-S", $SqlServer,
+                "-i", $ExistingDbBackupSql,
+                "-e",
+                "-b",
+                "-o", $dbBackupLog
+            ) `
+            -AllowFailure
+
+        Write-Log "Backup SQL actual ejecutado. Log: $dbBackupLog" "OK"
+    }
+    else {
+        Write-Log "No se encontró el script SQL actual: $ExistingDbBackupSql. Se omite backup SQL." "WARN"
+    }
+
+    Write-Log "=== SSO MASTER SECRET ==="
+
+    if ($BackupSsoSecret -and $ssoConfigPath) {
+        $ssoSecretFile = Join-Path $script:CurrentSsoDir "SSO_MasterSecret_$timestamp.bak"
+
+        Write-Log "Se iniciará backup de SSO Master Secret. Puede solicitar password interactiva." "WARN"
+
+        Invoke-External `
+            -FilePath $ssoConfigPath `
+            -Arguments @("-backupsecret", $ssoSecretFile) `
+            -AllowFailure
+
+        if (Test-PathNonEmpty $ssoSecretFile) {
+            Write-Log "SSO Master Secret respaldado: $ssoSecretFile" "OK"
+        }
+        else {
+            Write-Log "No se generó archivo válido de SSO Master Secret." "WARN"
+        }
+    }
+    else {
+        Write-Log "Backup SSO Master Secret omitido. Para incluirlo ejecutar con -BackupSsoSecret." "WARN"
+    }
+
+    Write-Log "=== EXPORT APLICACIONES / BINDINGS ==="
+
+    $applications = @()
+
+    if ($btsTaskPath -and $dbExists.Trim()) {
+        $appsRaw = Invoke-SqlQuery `
+            -Database $BizTalkMgmtDb `
+            -Query "SELECT nvcName FROM dbo.bts_application WHERE nvcName <> 'BizTalk.System' ORDER BY nvcName;" `
+            -AllowFailure
+
+        $applications = $appsRaw -split "`r?`n" |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -and $_ -notmatch "^-+$" }
+
+        $applicationsPath = Join-Path $script:CurrentConfigDir "BizTalkApplications.txt"
+        $applications | Set-Content -Path $applicationsPath -Encoding UTF8
+
+        Write-Log "Aplicaciones detectadas: $($applications.Count)" "OK"
+
+        foreach ($appName in $applications) {
+            $safeAppName = New-SafeFileName -Name $appName
+
+            Write-Log "Procesando aplicación: $appName"
+
+            $bindingFile = Join-Path $script:CurrentBindingsDir "$safeAppName.bindings.xml"
+
+            Invoke-External `
+                -FilePath $btsTaskPath `
+                -Arguments @(
+                    "ExportBindings",
+                    "/ApplicationName:$appName",
+                    "/Destination:$bindingFile",
+                    "/Server:$SqlServer",
+                    "/Database:$BizTalkMgmtDb"
+                ) `
+                -AllowFailure
+
+            if (Test-PathNonEmpty $bindingFile) {
+                Write-Log "Bindings exportados: $bindingFile" "OK"
+            }
+            else {
+                Write-Log "No se pudo exportar bindings o quedó vacío para: $appName" "WARN"
+            }
+
+            if (-not $SkipMsiExport) {
+                $msiFile = Join-Path $script:CurrentApplicationsDir "$safeAppName.msi"
+
+                Invoke-External `
+                    -FilePath $btsTaskPath `
+                    -Arguments @(
+                        "ExportApp",
+                        "/ApplicationName:$appName",
+                        "/Package:$msiFile",
+                        "/Server:$SqlServer",
+                        "/Database:$BizTalkMgmtDb"
+                    ) `
+                    -AllowFailure
+
+                if (Test-PathNonEmpty $msiFile) {
+                    Write-Log "MSI exportado: $msiFile" "OK"
+                }
+                else {
+                    Write-Log "No se pudo exportar MSI o quedó vacío para: $appName" "WARN"
+                }
+            }
+        }
+    }
+    else {
+        Write-Log "Export de aplicaciones/bindings omitido por falta de BTSTask o BizTalkMgmtDb." "WARN"
+    }
+
+    Write-Log "=== INVENTARIO CONFIG BIZTALK ==="
+
+    if ($dbExists.Trim()) {
+        $hostsTxt = Join-Path $script:CurrentConfigDir "BizTalkHosts.txt"
+
+        Invoke-SqlQuery `
+            -Database $BizTalkMgmtDb `
+            -Query "
+                SELECT
+                    nvcName AS HostName,
+                    CASE WHEN bIsolated = 1 THEN 'Isolated' ELSE 'In-Process' END AS HostType,
+                    ISNULL(bNtGroupName, '') AS NtGroupName
+                FROM dbo.adm_Host
+                ORDER BY nvcName;
+            " `
+            -AllowFailure |
+            Set-Content -Path $hostsTxt -Encoding UTF8
+
+        Write-Log "Inventario hosts generado: $hostsTxt" "OK"
+
+        $hostInstancesTxt = Join-Path $script:CurrentConfigDir "BizTalkHostInstances.txt"
+
+        Invoke-SqlQuery `
+            -Database $BizTalkMgmtDb `
+            -Query "
+                SELECT
+                    HostName,
+                    RunningServer,
+                    ServiceState,
+                    NTGroupName,
+                    NTUserName
+                FROM dbo.adm_HostInstance
+                ORDER BY HostName, RunningServer;
+            " `
+            -AllowFailure |
+            Set-Content -Path $hostInstancesTxt -Encoding UTF8
+
+        Write-Log "Inventario host instances generado: $hostInstancesTxt" "OK"
+
+        $sendPortsTxt = Join-Path $script:CurrentConfigDir "BizTalkSendPorts.txt"
+
+        Invoke-SqlQuery `
+            -Database $BizTalkMgmtDb `
+            -Query "
+                SELECT
+                    sp.nvcName AS SendPortName,
+                    app.nvcName AS ApplicationName,
+                    sp.nvcAddress AS Address
+                FROM dbo.bts_sendport sp
+                LEFT JOIN dbo.bts_application app ON sp.nApplicationID = app.nID
+                ORDER BY app.nvcName, sp.nvcName;
+            " `
+            -AllowFailure |
+            Set-Content -Path $sendPortsTxt -Encoding UTF8
+
+        Write-Log "Inventario send ports generado: $sendPortsTxt" "OK"
+
+        $receiveLocationsTxt = Join-Path $script:CurrentConfigDir "BizTalkReceiveLocations.txt"
+
+        Invoke-SqlQuery `
+            -Database $BizTalkMgmtDb `
+            -Query "
+                SELECT
+                    rl.Name AS ReceiveLocationName,
+                    rp.nvcName AS ReceivePortName,
+                    app.nvcName AS ApplicationName,
+                    rl.InboundTransportURL AS Address
+                FROM dbo.adm_ReceiveLocation rl
+                LEFT JOIN dbo.bts_receiveport rp ON rl.ReceivePortId = rp.nID
+                LEFT JOIN dbo.bts_application app ON rp.nApplicationID = app.nID
+                ORDER BY app.nvcName, rp.nvcName, rl.Name;
+            " `
+            -AllowFailure |
+            Set-Content -Path $receiveLocationsTxt -Encoding UTF8
+
+        Write-Log "Inventario receive locations generado: $receiveLocationsTxt" "OK"
+    }
+
+    Write-Log "=== INVENTARIO SQL AGENT JOBS ==="
+
+    $jobsTxt = Join-Path $script:CurrentConfigDir "SqlAgentJobs_BizTalk.txt"
+
+    Invoke-SqlQuery `
+        -Database "msdb" `
+        -Query "
+            SELECT
+                j.name AS JobName,
+                j.enabled AS Enabled,
+                SUSER_SNAME(j.owner_sid) AS OwnerName,
+                j.date_created,
+                j.date_modified
+            FROM dbo.sysjobs j
+            WHERE j.name LIKE '%BizTalk%'
+               OR j.name LIKE '%DTA%'
+               OR j.name LIKE '%MessageBox%'
+               OR j.name LIKE '%Backup%'
+            ORDER BY j.name;
+        " `
+        -AllowFailure |
+        Set-Content -Path $jobsTxt -Encoding UTF8
+
+    Write-Log "Inventario SQL jobs generado: $jobsTxt" "OK"
+
+    Write-Log "=== INVENTARIO CERTIFICADOS ==="
+
+    $certInventoryCsv = Join-Path $script:CurrentCertificatesDir "Certificates_LocalMachine.csv"
+
+    Get-ChildItem Cert:\LocalMachine\My, Cert:\LocalMachine\Root, Cert:\LocalMachine\CA -ErrorAction SilentlyContinue |
+        Select-Object `
+            PSParentPath,
+            Subject,
+            Issuer,
+            Thumbprint,
+            NotBefore,
+            NotAfter,
+            HasPrivateKey,
+            FriendlyName |
+        Export-Csv -Path $certInventoryCsv -NoTypeInformation -Encoding UTF8
+
+    Write-Log "Inventario certificados generado: $certInventoryCsv" "OK"
+
+    $publicCertDir = Join-Path $script:CurrentCertificatesDir "PublicCER"
+    New-Item -ItemType Directory -Path $publicCertDir -Force | Out-Null
+
+    Get-ChildItem Cert:\LocalMachine\My -ErrorAction SilentlyContinue | ForEach-Object {
+        $certPath = Join-Path $publicCertDir "$($_.Thumbprint).cer"
+        Export-Certificate -Cert $_ -FilePath $certPath | Out-Null
+    }
+
+    Write-Log "Certificados públicos exportados en: $publicCertDir" "OK"
+    Write-Log "IMPORTANTE: certificados con clave privada deben exportarse manualmente de forma segura si aplican." "WARN"
+
+    Write-Log "=== INVENTARIO SISTEMA ==="
+
+    Get-ComputerInfo |
+        Out-File -FilePath (Join-Path $script:CurrentConfigDir "ComputerInfo.txt") -Encoding UTF8
+
+    Get-ChildItem Env: |
+        Sort-Object Name |
+        Out-File -FilePath (Join-Path $script:CurrentConfigDir "EnvironmentVariables.txt") -Encoding UTF8
+
+    ipconfig /all |
+        Out-File -FilePath (Join-Path $script:CurrentConfigDir "NetworkConfig.txt") -Encoding UTF8
+
+    Write-Log "Inventario sistema generado." "OK"
+
+    Write-Log "=== POSTCHECKS ==="
+
+    $manifestPath = Join-Path $script:CurrentBackupDir "manifest.csv"
+
+    Get-ChildItem -Path $script:CurrentBackupDir -Recurse -File |
+        Select-Object `
+            FullName,
+            Length,
+            LastWriteTime,
+            @{Name = "SHA256"; Expression = { (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash }} |
+        Export-Csv -Path $manifestPath -NoTypeInformation -Encoding UTF8
+
+    Write-Log "Manifest generado: $manifestPath" "OK"
+
+    $zipPath = "$script:CurrentBackupDir.zip"
+
+    if (Test-Path $zipPath) {
+        Remove-Item $zipPath -Force
+    }
+
+    Compress-Archive -Path "$script:CurrentBackupDir\*" -DestinationPath $zipPath -CompressionLevel Optimal
+
+    if (Test-PathNonEmpty $zipPath) {
+        Write-Log "Backup comprimido: $zipPath" "OK"
+    }
+    else {
+        Write-Log "No se generó ZIP válido: $zipPath" "WARN"
+    }
+
+    Write-Log "Aplicando retención de $RetentionDays días sobre $BackupRoot"
+
+    Get-ChildItem -Path $BackupRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$RetentionDays) } |
+        ForEach-Object {
+            Write-Log "Eliminando backup viejo: $($_.FullName)" "WARN"
+            Remove-Item $_.FullName -Recurse -Force
+        }
+
+    Get-ChildItem -Path $BackupRoot -File -Filter "*.zip" -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$RetentionDays) } |
+        ForEach-Object {
+            Write-Log "Eliminando ZIP viejo: $($_.FullName)" "WARN"
+            Remove-Item $_.FullName -Force
+        }
+
+    Write-Log "Backup integral BizTalk finalizado correctamente." "OK"
+    Write-Log "Carpeta generada: $script:CurrentBackupDir" "OK"
+    Write-Log "ZIP generado: $zipPath" "OK"
+
+    exit 0
+}
+catch {
+    if (-not $script:LogFile) {
+        Write-Host "ERROR: $($_.Exception.Message)"
+    }
+    else {
+        Write-Log "ERROR: $($_.Exception.Message)" "ERROR"
+        Write-Log "Backup integral BizTalk finalizado con error." "ERROR"
+    }
+
+    exit 1
+}
+'@ | Set-Content -Path "$BasePath\BizTalk-FullBackup.ps1" -Encoding UTF8
+
+@'
 @echo off
- 
-for /f %%h in ('hostname') do set HOST=%%h
+cd /d "%~dp0"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0BizTalk-FullBackup.ps1"
+pause
+'@ | Set-Content -Path "$BasePath\Run-BizTalk-FullBackup.cmd" -Encoding ASCII
 
-for /f "tokens=2" %%s in ('sc query type^= service ^| find "MSSQL"') do set SRV1=%%s
+@'
+@echo off
+cd /d "%~dp0"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0BizTalk-FullBackup.ps1" -BackupSsoSecret
+pause
+'@ | Set-Content -Path "$BasePath\Run-BizTalk-FullBackup-WithSSO.cmd" -Encoding ASCII
 
-set INST=%SRV1:~6%
+Write-Host ""
+Write-Host "Listo. Archivos creados:"
+Write-Host "C:\BizTalkBackup\BizTalk-FullBackup.ps1"
+Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd"
+Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd"
+Write-Host ""
+Write-Host "Para ejecutar normal:"
+Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd"
+Write-Host ""
+Write-Host "Para ejecutar incluyendo SSO Master Secret:"
+Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd"
 
-set SRV=%HOST%\%INST%
- 
-for /F "tokens=1-3 delims=/ " %%i in ('date /t') do set YYYYMMDD=%%k%%j%%i
 
-set LOGFILE=G:\BizTalkDBs\Backup\Biztalk_Database_Backups_Logs\Biztalk_Database_Backups_%HOST%_%INST%_%YYYYMMDD%.log
- 
-sqlcmd -E -S %SRV% -i G:\BizTalkDBs\Backup\Biztalk_Database_Backups.sql -e -o %LOGFILE%
- 
-forfiles -p "G:\BizTalkDBs\Backup\Biztalk_Database_Backups_Logs" -s -m Biztalk_Database_Backups_*.log /D -32 /C "cmd /c echo Deleted @path && del @path" >> %LOGFILE%
- 
-Pero parece que les faltaría esto
- 
-Un backup BizTalk no está completo si no tienes respaldado el SSO Master Secret. Eso no aparece en este .bat.
- 
-No cubre bindings, MSI, certificados ni configuración
- 
-El script no exporta:
-Aplicaciones BizTalk .msi.
-Bindings .xml.
-Policies BRE.
-Certificados.
-Configuración de hosts/host instances.
-Adaptadores.
-Cuentas de servicio.
-Configuración externa.
- 
- 
-https://learn.microsoft.com/en-us/biztalk/core/backing-up-and-restoring-biztalk-server
+luego de pegar todo esto en PowerShell como Administrador. crea:
 
-https://learn.microsoft.com/en-us/biztalk/core/backing-up-a-computer-running-biztalk-server
+C:\BizTalkBackup\BizTalk-FullBackup.ps1
+C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd
+C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd
+
+
+
+EJECUTAR este .cmd como administrador:
+
+C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd
+
+Para incluir SSO Master Secret:
+
+C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd
+
