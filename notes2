@@ -1,47 +1,47 @@
-1) En el Avamar cccvmx1apavs001
+Sí. Acá el problema parece estar en el servicio systemd, no necesariamente en Grafana, porque manualmente arranca con:
 
-Corré esto:
+/msr/grafana-13.1.0/bin/grafana server --homepath /msr/grafana-13.1.0
 
-hostname; date; status.dpn; dpnctl status
+Pero el servicio intenta arrancar con otra línea:
 
-Después capacidad/local filesystems:
+/msr/grafana-13.1.0/bin/grafana server --config=/msr/grafana-13.1.0/conf/grafana.ini --homepath=/msr/grafana-13.1.0
 
-df -h
+Primero dejalo como servicio usando exactamente el comando que funciona:
 
-Validá los parámetros de forecast que mencionaron:
+cat >/etc/systemd/system/grafana-server.service <<'EOF'
+[Unit]
+Description=Grafana Server
+After=network-online.target
+Wants=network-online.target
 
-grep -i 'reach' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/msr/grafana-13.1.0
+ExecStart=/msr/grafana-13.1.0/bin/grafana server --homepath /msr/grafana-13.1.0
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=10000
 
-Buscá eventos recientes relacionados a capacity:
+[Install]
+WantedBy=multi-user.target
+EOF
 
-grep -iE "capacity|reaching|22629|DPN_REACHING_CAPACITY" /usr/local/avamar/var/mc/server_log/mcserver.log | tail -n 50
+systemctl daemon-reload
+systemctl reset-failed grafana-server
+systemctl enable grafana-server
+systemctl restart grafana-server
+systemctl status grafana-server --no-pager
 
-Y estado de checkpoints/maintenance:
+Si con eso levanta, validá:
 
-avmaint nodelist | egrep -i "nodetag|hfscheck|checkpoint|readonly|capacity|percent|server"
-2) En el Data Domain cccvmx1apdds001
+ss -lntp | grep 3000
+curl -k -I http://127.0.0.1:3000
 
-Entrá por SSH al DD y corré:
+Si no levanta, pasame la salida de este comando:
 
-filesys show space
-filesys clean status
-filesys clean schedule
-alerts show current
-system show stats
-Qué queremos confirmar
+journalctl -u grafana-server -n 100 --no-pager
 
-Lo importante es ver:
-
-Uso actual real del DD
-Si está cerca del 95%
-Si hay clean corriendo o programado
-Si hay alerts críticas actuales
-Si Avamar solo está proyectando capacidad a 30 días
-
-No cambiaría todavía esto:
-
-capReachedPercentage
-capForecastReachedDays
-trap 22629
-
-Primero confirmamos con datos. Pegame las salidas de esos comandos y te digo si la respuesta puede ir como “warning predictivo sin impacto actual” o si hay que recomendar acción real sobre capacity/clean.
+Dato importante: según el documento de MSR, el prerequisito esperado era Grafana 12.4.2, no 13.1.0.
+Entonces, si con el servicio corregido sigue fallando, puede haber incompatibilidad de versión con el paquete MSR. El mismo documento también indica que Grafana se configura desde /etc/grafana/grafana.ini, se reinicia con systemctl restart grafana-server y se valida con systemctl is-active grafana-server.
