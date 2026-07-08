@@ -294,3 +294,27 @@ dpsmsm system collect --host <FQDN/IP>
    ```Host: <system-ip-or-hostname>, Post: 3000, Protocol: https, User: admin, & Password: Password123!```
 5. **Default PostgreSQL Credentials**:
    ```Host: <system-ip-or-hostname>, Port: 5432, User: postgres & Password: Password123!```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hola David, ¿cómo estás?
+
+Por el tema de MSR/Grafana/PostgreSQL, quería consultarte si sería posible contar con los paquetes de instalación en un FTP o repositorio accesible desde nuestra red.
+
+Como la VM del VDC puede tener restricciones de salida a Internet, se me ocurrió una alternativa: montar la VM completa en mi LAB local, instalar y validar Grafana, PostgreSQL, TimescaleDB, Java, OpenTelemetry y los paquetes requeridos, y luego exportarla como OVF para subirla al VDC.
+
+De esa forma evitamos depender de Internet durante la instalación en el entorno final y después solo ajustamos networking, hostname, accesos y configuración específica del VDC.
+
+¿Te parece viable hacerlo así o preferís que lo trabajemos directamente sobre la VM del VDC con los paquetes disponibles desde un FTP/repositorio interno?
