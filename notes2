@@ -1,320 +1,47 @@
-# Multi System Reporting (MSR)
+1) En el Avamar cccvmx1apavs001
 
-- The "tar" package must be installed in your linux system (virtual machine).
-- Create & move to a directory in the VM to download the MSR installer package.
-- Download the latest MSR installer package.
-- Untar the MSR installer package using: _tar -xzpf <package_name>_
-- For installation, refer the '**README.md**' extracted from the MSR installer package.
+Corré esto:
 
-###############3
+hostname; date; status.dpn; dpnctl status
 
-# Multi System Reporting (MSR)
+Después capacidad/local filesystems:
 
-#### Supported Operating Systems:
+df -h
 
-```bash
-1. SLES15 & above
-2. openSUSE15 & above
-3. RHEL8 & above
-4. CentOS8 & above
-```
-#### Licensing information:
-```bash
-Timescale DB: Apache 2.0 License
-OpenTelemetry Collector: Apache License 2.0
-Grafana: AGPL-3.0 license
-``` 
-#### Hardware requirements:
-```bash
-8 CPUs
-16GB RAM
-512GB Storage
-```       
-#### OS Packages requirements:
-|||||
-|--------|---------|---------|-------------|
-| `tar` | `wget` | `nslookup` | `chkconfig` |
-| `git-core` | `cmake` | `gcc` | `rpm-build` |
-| `openssl` | `openssl-devel` | `jq` | `awk` |
-| `sed` | `tr` | `curl` | `cut` |
-| `grep` | `ip` | `ping` | `gzip` | 
-| `bind-utils` | `keytool` | - | - |
+Validá los parámetros de forecast que mencionaron:
 
+grep -i 'reach' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml
 
-#### MSR Installation Prerequisites:
-```bash
-java 17
-otelcol-contrib 0.144.0
-grafana 12.4.2
-postgresql 16
-timescaledb extension 2.16.1
-```
-### **Install Multi System Reporting**
-**The MSR installer package contains the following files/zip:**
-- **msr** - shell script to precheck, install, update, uninstall and validate the multi system reporting solution.
-- **config.properties** - configuration file for the multi system reporting solution installation and management.
-- **msr.tar.gz** - contains all the binaries needed for 'msr' shell script execution.
-- **README.md** - instructions on how to manually install the prerequisites needed for the multi system reporting solution.
-- **build.info** - build version details for the multi system reporting solution.
+Buscá eventos recientes relacionados a capacity:
 
-- Update required PostgreSQL & Grafana password in config.properties file before installation. Skip for default.
-- Update other required configurations in config.properties file before installation. Skip for defaults.
+grep -iE "capacity|reaching|22629|DPN_REACHING_CAPACITY" /usr/local/avamar/var/mc/server_log/mcserver.log | tail -n 50
 
-#### MSR Installation Commands:
-```bash
-# To get help on MSR installer
-bash msr --help
+Y estado de checkpoints/maintenance:
 
-# To run precheck for MSR installation
-bash msr --precheck
+avmaint nodelist | egrep -i "nodetag|hfscheck|checkpoint|readonly|capacity|percent|server"
+2) En el Data Domain cccvmx1apdds001
 
-# To run precheck for MSR installation
-bash msr --version
+Entrá por SSH al DD y corré:
 
-# To start MSR installation (default option to install all i.e. with prerequisites)
-bash msr --install
+filesys show space
+filesys clean status
+filesys clean schedule
+alerts show current
+system show stats
+Qué queremos confirmar
 
-# To list options & run individual installation
-bash msr --install --help
-bash msr --install <option>
+Lo importante es ver:
 
-# To validate the status of services after MSR installation
-bash msr --validate
+Uso actual real del DD
+Si está cerca del 95%
+Si hay clean corriendo o programado
+Si hay alerts críticas actuales
+Si Avamar solo está proyectando capacidad a 30 días
 
-# To list options & update MSR components
-bash msr --update --help
-bash msr --update <option>
+No cambiaría todavía esto:
 
-# To list options & uninstall MSR components
-bash msr --uninstall --help
-bash msr --uninstall <option>
-```
+capReachedPercentage
+capForecastReachedDays
+trap 22629
 
-#### MSR Split Installation Commands:
-- PostgreSQL and Grafana can be on same or different hosts as required.
-- Update required PostgreSQL & Grafana password in config.properties file before installation. Skip for default.
-- MSR can be on installed on a different host.
-- Before installing MSR, update PostgreSQL configuration in config.properties file of MSR host.
-- Before installing Grafana dashboards, update PostgreSQL configuration in config.properties file of Grafana host.
-- Use below commands as per requirement:
-```bash
-# To install Grafana
-bash msr --install grafana
-
-# To install PostgreSQL
-bash msr --install postgres
-
-# To install MSR (data-collector) it requires java and otel installation
-bash msr --install java
-bash msr --install otel
-bash msr --install dcs
-
-# To install Grafana dashboards (Login to host where Grafana is installed)
-bash msr --install grafana-dashboards
-```
-
-#### MSR Scaling the Data Collector:
-- The MSR (data collector) can be scaled, as your data increases.
-- Data collector can be installed as **CENTRAL** or **EDGE** mode.
-- **CENTRAL** mode Data collector has data collector as well as data exporter, which exports data to timescale database.
-- EDGE mode has only Data collector, and the data collected at various edge data collectors is forwarded to CENTRAL node.
-- Default Data Collector installation is **CENTRAL** mode. There can be only one **CENTRAL** mode Data Collector.
-
-To install MSR in **EDGE** mode,
-- Update the config.properties file for below properties 
-  - DCS_CONFIG_MODE='EDGE'
-  - DCS_CENTRAL_NODE_HOST=&lt;ip-of-central-node-data-collector&gt;
-  - Use below commands for installation:
-```bash
-# To install MSR (data-collector) it requires java and otel installation
-bash msr --install java
-bash msr --install otel
-bash msr --install dcs
-```
-
-#### MSR Update Commands:
-- Download and extract the MSR latest package. 
-- MSR provides the below commands to update the MSR components.
-```bash
-# To update the MSR (data-collector), database schema and required binaries
-bash msr --update dcs
-
-# To overwrite the existing Grafana dashboards & add any new ones
-bash msr --update grafana-dashboards
-```
-
-#### MSR Configuration Commands:
-The below commands can be used to manage systems for data collection:
-```bash
-# Add a single system to the data collector
-dpsmsm system add --host <FQDN/IP> --username <username> --password <password>
-dpsmsm system add --type <type>- --host <FQDN/IP> --clientid <clientid> --secretkey <secretkey>
-
-# Add multiple systems using a JSON configuration file
-dpsmsm system batch-add --file <JSON file path>
-
-# Show systems
-dpsmsm system show --all 
-dpsmsm system show --host <FQDN/IP>  
-
-# Enable data collection for a system (using either ID or host)
-dpsmsm system enable --id <system ID>
-dpsmsm system enable --host <FQDN/IP>
-
-# Disable data collection for a system (using either ID or host)
-dpsmsm system disable --id <system ID>
-dpsmsm system disable --host <FQDN/IP>
-
-# Retire a system while retaining collected data (using either ID or host)
-dpsmsm system retire --id <system ID>
-dpsmsm system retire --host <FQDN/IP>
-
-# Delete a system and its collected data (using either ID or host)
-dpsmsm system delete --id <system ID>
-dpsmsm system delete --host <FQDN/IP>
-
-# Modify system settings
-dpsmsm system modify --id <system ID> --host <FQDN/IP> --username <username> --password <password>
-dpsmsm system modify --id <system ID> --host <FQDN/IP> --clientid <clientid> --secretkey <secretkey>
-
-# Initiate data collection
-dpsmsm system collect --all                
-dpsmsm system collect --host <FQDN/IP> 
-```
-
-### Manual Installation Help for Prerequisites
-#### Install Java17:
-- Login as root user and enable repositories (if needed).
-- Turn off the firewall: **systemctl stop firewalld**
-- To install openjdk17 on SLES 15.4 SP4 run: **zypper install java-17-openjdk-headless**
-- To install openjdk17 on CentOS 9 run: **dnf install java-17-openjdk-headless**
-- To validate version for java installed run: **java -version**
-
-#### OpenTelemetry Collector Installation:
-- Login as root user and enable repositories (if needed).
-- Turn off the firewall: **systemctl stop firewalld**
-- Get OpenTelemetry Collector 0.144.0 RPM using: **wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol-contrib_0.144.0_linux_amd64.rpm**
-- Install OpenTelemetry Collector RPM using: **rpm -ivh otelcol-contrib_0.144.0_linux_amd64.rpm**
-- To validate version for OpenTelemetry Collector installed run: **otelcol-contrib --version**
-
-#### Grafana Server Installation & Configuration:
-- Login as root user and enable repositories (if needed).
-- Turn off the firewall: **systemctl stop firewalld**
-- Install grafana referring to below:
-   - Get Grafana rpm using: **wget https://dl.grafana.com/grafana-enterprise/release/12.4.2/grafana-enterprise_12.4.2_23531306697_linux_amd64.rpm**
-   - Install Grafana rpm using: **grafana-enterprise_12.4.2_23531306697_linux_amd64.rpm**
-- Edit config at /etc/grafana/grafana.ini and edit following entry:
-   1. ```;http_port = 3000 ``` remove ";" and update the default **3000** port if needed, else skip.
-   2. ```;protocol = http ``` remove ";" and update **http** to **https**.
-   3. ```;login_maximum_inactive_lifetime_duration =``` remove ";" and update as **login_maximum_inactive_lifetime_duration = 2M**
-   4. ```;login_maximum_lifetime_duration =``` remove ";" and update as **login_maximum_lifetime_duration = 2M**
-   5. ```;token_rotation_interval_minutes = 10``` remove ";" and update as **token_rotation_interval_minutes = 1000**
-- Restart Grafana via command: **systemctl restart grafana-server**
-- To validate if grafana server is up & running use: **systemctl is-active grafana-server**
-- Login to a browser and access URL: **https://<grafana_server_ip>:<port>/**
-
-#### PostgreSQL (with TimescaleDB) Installation & Configuration (SLES/openSUSE) :
-- Login as root user and enable repositories (if needed).
-- Turn off the firewall: **systemctl stop firewalld**
-- Install PostgreSQL:
-   - run: **zypper install postgresql16-server postgresql16-server-devel**
-   - validate the installation using: psql --version
-- Create a directory for PostgreSQL installation: **mkdir -p &lt;path&gt;**
-- Add ownership for database user to installation directory: **chown -R postgres:postgres &lt;path&gt;**
-- Update **/etc/sysconfig/postgresql** environment file to update **POSTGRES_DATADIR="&lt;path&gt;"** and save file.
-- Configure PostgreSQL using below commands:
-   - Switch to postgres user using: **su - postgres**
-   - Initialize PostgreSQL database using: **initdb --pgdata &lt;path&gt;**
-   - Exit from postgres user using: **exit** or **\q**
-   - Start PostgreSQL service using: **systemctl start postgresql.service**
-   - Connect to PostgreSQL command line using: **psql -U postgres -h 127.0.0.1**
-   - Alter password for postgres user using: **alter user postgres password 'Password123!';**
-     If the password change was successful, you will see **ALTER ROLE** in output.
-   - Exit from postgres user using: **\q**
-- Update PostgreSQL using below commands:
-- Stop PostgreSQL service using: **systemctl stop postgresql.service**
-- Update the **&lt;path&gt;/data/pg_hba.conf** file, and add below under the IPv4 section:
-  ```host all all 0.0.0.0/0 scram-sha-256```
-- Update the **&lt;path&gt;/data/postgresql.conf** file, alter the below configurations:
-  ```listen_addresses = '*'```
-  ```port = 5432```
-  ```max_locks_per_transaction = 2048```
-- Install git-core, cmake and gcc using: **zypper install git-core gcc cmake**
-- Follow **https://docs.timescale.com/self-hosted/latest/install/installation-source/** to install timescaledb extension from source, use version 2.16.1
--  Update **&lt;path&gt;/data/postgresql.conf** file, and alter below config:
-   ```shared_preload_libraries = 'timescaledb'```
-- Start PostgreSQL service using: **systemctl start postgresql.service**
-- Connect to PostgreSQL using: **psql -U postgres -h 127.0.0.1 -p 5432** and authenticate using the password set above.
-- In order to enable the timescaledb extension run: **CREATE EXTENSION IF NOT EXISTS timescaledb;**
-- To validate the timescaledb extension added, run: **\dx**.
-
-#### PostgreSQL (with TimescaleDB) Installation & Configuration (CentOS/RHEL):
-- Login as root user and enable repositories (if needed).
-- Turn off the firewall: **systemctl stop firewalld**
-- Install PostgreSQL:
-   - run: **dnf module install postgresql:16**
-   - run: **dnf install postgresql-server-devel**
-   - validate the installation using: psql --version
-- Create a directory for PostgreSQL installation: **mkdir -p &lt;path&gt;**
-- Add ownership for database user to installation directory: **chown -R postgres:postgres &lt;path&gt;**
-- Update **/usr/lib/systemd/system/postgresql.service** file to update **Environment=PGDATA=&lt;path&gt;** and save file.
-- Configure PostgreSQL using below commands:
-   - Switch to postgres user using: **su - postgres**
-   - Initialize PostgreSQL database using: **initdb --pgdata &lt;path&gt;**
-   - Exit from postgres user using: **exit** or **\q**
-   - Set required permissions on &lt;path&gt; using: **chcon -Rt postgresql_db_t &lt;path&gt;**
-   - Enable PostgreSQL service using: **systemctl enable postgresql.service**
-   - Start PostgreSQL service using: **systemctl start postgresql.service**
-   - Connect to PostgreSQL command line using: **psql -U postgres -h 127.0.0.1**
-   - Alter password for postgres user using: **alter user postgres password 'Password123!';**
-     If the password change was successful, you will see **ALTER ROLE** in output.
-   - Exit from postgres user using: **\q**
-- Update PostgreSQL using below commands:
-   - Stop PostgreSQL service using: **systemctl stop postgresql.service**
-   - Update the &lt;path&gt;/data/pg_hba.conf file, and add below under the IPv4 section:
-     ```host all all 0.0.0.0/0 scram-sha-256```
-   - Update the &lt;path&gt;/data/postgresql.conf file, alter the below configs:
-     ```listen_addresses = '*'```
-     ```port = 5432```
-     ```max_locks_per_transaction = 2048```
-- Install git-core, cmake, gcc, rpm-build & openssl-devel using: **dnf install git-core gcc cmake rpm-build openssl-devel**
-- Follow **https://docs.timescale.com/self-hosted/latest/install/installation-source/** to install timescaledb extension from source, use version 2.16.1
--  Update **&lt;path&gt;/data/postgresql.conf** file, and alter below config:
-   ```shared_preload_libraries = 'timescaledb'```
-- Start PostgreSQL service using: **systemctl start postgresql.service**
-- Connect to PostgreSQL using: **psql -U postgres -h 127.0.0.1 -p 5432** and authenticate using the password set above.
-- In order to enable the timescaledb extension run: **CREATE EXTENSION IF NOT EXISTS timescaledb;**
-- To validate the timescaledb extension added, run: **\dx**.
-
-### Notes:
-1. The firewall rules must be set to allow grafana and postgresql connections.
-2. The system's hostname must match the system FQDN (part) for the lockbox operations.
-3. The recommended size for PostgreSQL data directory (defined as POSTGRES_DATA_DIR in config.properties) is 500G.
-4. **Default Grafana Credentials**:
-   ```Host: <system-ip-or-hostname>, Post: 3000, Protocol: https, User: admin, & Password: Password123!```
-5. **Default PostgreSQL Credentials**:
-   ```Host: <system-ip-or-hostname>, Port: 5432, User: postgres & Password: Password123!```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Hola David, ¿cómo estás?
-
-Por el tema de MSR/Grafana/PostgreSQL, quería consultarte si sería posible contar con los paquetes de instalación en un FTP o repositorio accesible desde nuestra red.
-
-Como la VM del VDC puede tener restricciones de salida a Internet, se me ocurrió una alternativa: montar la VM completa en mi LAB local, instalar y validar Grafana, PostgreSQL, TimescaleDB, Java, OpenTelemetry y los paquetes requeridos, y luego exportarla como OVF para subirla al VDC.
-
-De esa forma evitamos depender de Internet durante la instalación en el entorno final y después solo ajustamos networking, hostname, accesos y configuración específica del VDC.
-
-¿Te parece viable hacerlo así o preferís que lo trabajemos directamente sobre la VM del VDC con los paquetes disponibles desde un FTP/repositorio interno?
+Primero confirmamos con datos. Pegame las salidas de esos comandos y te digo si la respuesta puede ir como “warning predictivo sin impacto actual” o si hay que recomendar acción real sobre capacity/clean.
