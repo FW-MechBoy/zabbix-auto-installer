@@ -1,7 +1,6 @@
-find / -type f \( -name gcc -o -name cc -o -name clang -o -name make -o -name gmake -o -name cmake \) 2>/dev/null | sort
-
-rpm -qa | egrep -i 'gcc|clang|llvm|make|cmake|ninja|binutils|glibc-devel|kernel-headers|postgresql18-devel'
-
-systemctl enable postgresql-18
+/usr/pgsql-18/bin/psql --version
+systemctl is-active postgresql-18
 systemctl is-enabled postgresql-18
-systemctl status postgresql-18 --no-pager -l
+su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c \"SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name ILIKE '%timescale%';\""
+command -v gcc cc clang make cmake || true
+dnf repolist all
