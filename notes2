@@ -1,47 +1,98 @@
-Sí. Acá el problema parece estar en el servicio systemd, no necesariamente en Grafana, porque manualmente arranca con:
+psql -U postgres -d postgres -c "SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name ILIKE '%timescale%';"
 
-/msr/grafana-13.1.0/bin/grafana server --homepath /msr/grafana-13.1.0
+También:
 
-Pero el servicio intenta arrancar con otra línea:
+find / -iname '*timescale*' 2>/dev/null
 
-/msr/grafana-13.1.0/bin/grafana server --config=/msr/grafana-13.1.0/conf/grafana.ini --homepath=/msr/grafana-13.1.0
+Si aparece timescaledb, entonces no hay que compilar nada. Solo habría que habilitarlo en PostgreSQL:
 
-Primero dejalo como servicio usando exactamente el comando que funciona:
+CREATE EXTENSION IF NOT EXISTS timescaledb;
 
-cat >/etc/systemd/system/grafana-server.service <<'EOF'
-[Unit]
-Description=Grafana Server
-After=network-online.target
-Wants=network-online.target
+Y revisar shared_preload_libraries si lo pide.
 
-[Service]
-Type=simple
-User=root
-Group=root
-WorkingDirectory=/msr/grafana-13.1.0
-ExecStart=/msr/grafana-13.1.0/bin/grafana server --homepath /msr/grafana-13.1.0
-Restart=on-failure
-RestartSec=10
-LimitNOFILE=10000
+2. Ver si existe algún repo interno del banco
 
-[Install]
-WantedBy=multi-user.target
-EOF
+Aunque el server no tenga internet, capaz tiene repos corporativos internos deshabilitados o mal configurados:
 
-systemctl daemon-reload
-systemctl reset-failed grafana-server
-systemctl enable grafana-server
-systemctl restart grafana-server
-systemctl status grafana-server --no-pager
+cat /etc/os-release && ls -lah /etc/yum.repos.d/ && dnf repolist all
 
-Si con eso levanta, validá:
+También revisaría si hay paquetes cacheados:
 
-ss -lntp | grep 3000
-curl -k -I http://127.0.0.1:3000
+find /var/cache/dnf /var/cache/yum -iname '*.rpm' 2>/dev/null | head -50
 
-Si no levanta, pasame la salida de este comando:
+Y si hay toolchains instalados en otra ruta:
 
-journalctl -u grafana-server -n 100 --no-pager
+find / -type f \( -name gcc -o -name cc -o -name cmake -o -name make \) 2>/dev/null
 
-Dato importante: según el documento de MSR, el prerequisito esperado era Grafana 12.4.2, no 13.1.0.
-Entonces, si con el servicio corregido sigue fallando, puede haber incompatibilidad de versión con el paquete MSR. El mismo documento también indica que Grafana se configura desde /etc/grafana/grafana.ini, se reinicia con systemctl restart grafana-server y se valida con systemctl is-active grafana-server.
+Si aparece un repo interno, ahí sí se puede pedir instalación formal de:
+
+gcc
+gcc-c++
+make
+cmake
+postgresql-devel
+openssl-devel
+readline-devel
+zlib-devel
+
+Pero esto debería hacerlo el equipo Unix/Linux del banco o mediante change.
+
+3. Alternativa más correcta: pedir paquete precompilado por change
+
+Para banco, lo más prolijo no es compilar en el server, sino pedir la instalación de un RPM precompilado compatible con:
+
+cat /etc/os-release
+psql --version
+rpm -qa | grep -i postgres
+
+La solicitud debería pedir algo como:
+
+Instalación controlada del paquete TimescaleDB compatible con la versión actual de PostgreSQL y sistema operativo del servidor.
+No se requiere salida a internet desde el servidor. La provisión del paquete deberá realizarse mediante repositorio interno, herramienta corporativa de distribución o procedimiento aprobado por Seguridad/Unix.
+
+Ejemplo de paquete esperado, dependiendo de la versión:
+
+timescaledb-2-postgresql-XX
+timescaledb-tools
+postgresqlXX-devel
+
+Donde XX es la versión de PostgreSQL, por ejemplo 13, 14, 15 o 16.
+
+4. Alternativa funcional sin TimescaleDB: particionado nativo de PostgreSQL
+
+Si la necesidad es manejar métricas/eventos por fecha, se puede avanzar sin TimescaleDB usando partitioning nativo de PostgreSQL. No requiere instalar nada externo.
+
+Ejemplo base:
+
+CREATE TABLE metricas (
+    id BIGSERIAL,
+    fecha TIMESTAMPTZ NOT NULL,
+    origen TEXT NOT NULL,
+    metrica TEXT NOT NULL,
+    valor NUMERIC NOT NULL,
+    PRIMARY KEY (id, fecha)
+) PARTITION BY RANGE (fecha);
+
+Partición mensual:
+
+CREATE TABLE metricas_2026_07
+PARTITION OF metricas
+FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
+
+Índices:
+
+CREATE INDEX idx_metricas_2026_07_fecha ON metricas_2026_07 (fecha);
+CREATE INDEX idx_metricas_2026_07_origen_metrica_fecha ON metricas_2026_07 (origen, metrica, fecha DESC);
+
+Esto no reemplaza todo TimescaleDB, pero para muchos casos de series temporales alcanza: consultas por rango, retención por partición, índices por período y limpieza rápida con DROP TABLE de particiones viejas.
+
+Mi recomendación
+
+No sigas intentando compilar gcc, cmake ni timescaledb en ese equipo. En un entorno bancario cerrado, el camino correcto es:
+
+Confirmar si TimescaleDB ya está instalado o disponible.
+Confirmar si hay repos internos.
+Si no hay nada, pedir instalación formal por change al equipo Unix/DBA.
+Si la urgencia es seguir con la implementación, usar particionado nativo de PostgreSQL como alternativa sin instalar paquetes.
+
+Texto breve para pedirlo internamente:
