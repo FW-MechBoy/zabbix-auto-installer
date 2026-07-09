@@ -1,3 +1,12 @@
 su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c 'SELECT version();'"
 
 su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c \"SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name ILIKE '%timescale%';\""
+
+su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c 'SELECT version();'"
+
+
+su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c \"SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name ILIKE '%timescale%';\""
+
+/usr/pgsql-18/bin/postgresql-18-setup initdb
+systemctl start postgresql-18
+systemctl status postgresql-18 --no-pager -l
