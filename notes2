@@ -1,5 +1,3 @@
-ls -lah /var/lib/pgsql/18 && ls -lah /var/lib/pgsql/18/data 2>&1
+su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c 'SELECT version();'"
 
-Después corré este chequeo:
-
-/usr/pgsql-18/bin/postgresql-18-check-db-dir /var/lib/pgsql/18/data; echo "RC=$?"
+su - postgres -c "/usr/pgsql-18/bin/psql -d postgres -c \"SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name ILIKE '%timescale%';\""
