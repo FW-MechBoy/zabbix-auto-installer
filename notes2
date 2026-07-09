@@ -1,11 +1,24 @@
-Después este:
+Ejecutá esto:
 
-systemctl list-units --type=service --all | egrep -i 'postgres|pgsql|patroni|edb'
+rpm -qa | egrep -i 'postgres|pgsql|timescale'
 
-Y este:
+Después:
 
-ps -ef | egrep -i 'postgres|postmaster|patroni' | grep -v grep
+command -v postgres initdb pg_ctl pg_config
 
-Por último, revisemos si hay algo escuchando en puertos típicos:
+Después:
 
-ss -lntp | egrep '5432|5433|5434|postgres|postmaster'
+ls -lah /usr/pgsql-* /var/lib/pgsql /usr/lib/systemd/system/*postgres* /usr/lib/systemd/system/*pgsql* 2>/dev/null
+
+Y por último:
+
+find / -maxdepth 4 -type f \( -name postgres -o -name initdb -o -name pg_ctl -o -name pg_config \) 2>/dev/null
+
+Con eso vamos a saber si:
+
+está instalado PostgreSQL Server pero sin servicio creado;
+está instalado en una ruta no estándar;
+solo está instalado psql;
+hay algo de TimescaleDB ya presente.
+
+No ejecutes todavía initdb, postgres, ni crees servicios. Primero veamos qué hay instalado realmente.
