@@ -1,3 +1,7 @@
-command -v gcc g++ make cmake || true
-ls -lah /msr | egrep -i 'timescale|gcc|cmake|make|postgres|pgsql|glibc|devel'
-rpm -qa | egrep -i 'timescale|gcc|cmake|make|postgres|pgsql|glibc-devel|postgresql18-devel'
+find / -type f \( -name gcc -o -name cc -o -name clang -o -name make -o -name gmake -o -name cmake \) 2>/dev/null | sort
+
+rpm -qa | egrep -i 'gcc|clang|llvm|make|cmake|ninja|binutils|glibc-devel|kernel-headers|postgresql18-devel'
+
+systemctl enable postgresql-18
+systemctl is-enabled postgresql-18
+systemctl status postgresql-18 --no-pager -l
