@@ -1,24 +1,20 @@
-Ejecutá esto:
-
-rpm -qa | egrep -i 'postgres|pgsql|timescale'
-
-Después:
-
-command -v postgres initdb pg_ctl pg_config
+ls -lah /var/lib/pgsql/18
+ls -lah /var/lib/pgsql/18/data 2>/dev/null
 
 Después:
 
-ls -lah /usr/pgsql-* /var/lib/pgsql /usr/lib/systemd/system/*postgres* /usr/lib/systemd/system/*pgsql* 2>/dev/null
+du -sh /var/lib/pgsql/18 /var/lib/pgsql/18/data 2>/dev/null
 
-Y por último:
+Y revisemos el service:
 
-find / -maxdepth 4 -type f \( -name postgres -o -name initdb -o -name pg_ctl -o -name pg_config \) 2>/dev/null
+systemctl cat postgresql-18
 
-Con eso vamos a saber si:
+También:
 
-está instalado PostgreSQL Server pero sin servicio creado;
-está instalado en una ruta no estándar;
-solo está instalado psql;
-hay algo de TimescaleDB ya presente.
+systemctl status postgresql-18 --no-pager -l
 
-No ejecutes todavía initdb, postgres, ni crees servicios. Primero veamos qué hay instalado realmente.
+Si /var/lib/pgsql/18/data existe y tiene archivos, no hacemos initdb.
+
+Si /var/lib/pgsql/18/data no existe o está vacío, ahí sí el próximo paso sería inicializar el cluster con:
+
+/usr/pgsql-18/bin/postgresql-18-setup initdb
