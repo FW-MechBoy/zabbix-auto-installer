@@ -1,26 +1,3 @@
-Ahora hagamos el siguiente relevamiento, sin modificar nada.
+find / -type f \( -iname '*.rpm' -o -iname '*timescale*.tar*' -o -iname '*timescale*.zip' -o -iname '*gcc*.rpm' -o -iname '*cmake*.rpm' -o -iname '*make*.rpm' \) 2>/dev/null | sort
 
-1. Buscar si hay archivos de TimescaleDB en disco
-find / -iname '*timescale*' 2>/dev/null
-2. Ver dónde PostgreSQL espera las extensiones
-/usr/pgsql-18/bin/pg_config --pkglibdir
-/usr/pgsql-18/bin/pg_config --sharedir
-3. Ver si existe el directorio de extensiones
-ls -lah /usr/pgsql-18/share/extension | grep -i timescale
-ls -lah /usr/pgsql-18/lib | grep -i timescale
-4. Confirmar si realmente tenemos compilador o no
-command -v gcc g++ make cmake
-gcc --version 2>/dev/null
-make --version 2>/dev/null
-cmake --version 2>/dev/null
-5. Ver qué RPMs hay instalados relacionados
-rpm -qa | egrep -i 'postgres|pgsql|timescale|gcc|cmake|make|glibc-devel'
-
-Con esas salidas vamos a decidir el camino:
-
-Si aparecen archivos timescaledb.control y timescaledb.so, solo habría que ajustar rutas/configuración.
-Si no aparecen, TimescaleDB no está instalado.
-Si hay gcc, make, cmake y pg_config, podemos intentar compilar.
-Si no hay toolchain, en este entorno cerrado no vamos a poder instalar TimescaleDB sin repo interno, ISO o paquete aprobado por el banco.
-
-Por ahora ejecutá esos comandos y pasame la salida.
+find /var/cache/dnf /var/cache/yum /msr /tmp /opt -type f -iname '*.rpm' 2>/dev/null | sort
