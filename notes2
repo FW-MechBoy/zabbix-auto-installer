@@ -1,20 +1,5 @@
-ls -lah /var/lib/pgsql/18
-ls -lah /var/lib/pgsql/18/data 2>/dev/null
+ls -lah /var/lib/pgsql/18 && ls -lah /var/lib/pgsql/18/data 2>&1
 
-Después:
+Después corré este chequeo:
 
-du -sh /var/lib/pgsql/18 /var/lib/pgsql/18/data 2>/dev/null
-
-Y revisemos el service:
-
-systemctl cat postgresql-18
-
-También:
-
-systemctl status postgresql-18 --no-pager -l
-
-Si /var/lib/pgsql/18/data existe y tiene archivos, no hacemos initdb.
-
-Si /var/lib/pgsql/18/data no existe o está vacío, ahí sí el próximo paso sería inicializar el cluster con:
-
-/usr/pgsql-18/bin/postgresql-18-setup initdb
+/usr/pgsql-18/bin/postgresql-18-check-db-dir /var/lib/pgsql/18/data; echo "RC=$?"
