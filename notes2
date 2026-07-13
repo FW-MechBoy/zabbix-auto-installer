@@ -3,3 +3,16 @@ find / -type f \( -name "*.crt" -o -name "*.pem" -o -name "*.cer" \) 2>/dev/null
         echo "$(openssl x509 -in "$cert" -noout -enddate | cut -d= -f2)|$cert"
     fi
 done | sort
+
+
+openssl x509 -in /etc/apache2/ssl.crt/server.crt -noout -subject -issuer -dates
+
+grep -Ri "SSLCertificate" /etc/apache2/
+
+for f in /etc/apache2/ssl.crt/*; do
+    [ -f "$f" ] && openssl x509 -in "$f" -noout -subject -enddate 2>/dev/null && echo
+done
+
+ls -l /etc/apache2/ssl.crt
+
+ls -l /etc/apache2/ssl.key
