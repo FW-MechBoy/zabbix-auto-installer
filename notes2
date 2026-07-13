@@ -16,3 +16,88 @@ done
 ls -l /etc/apache2/ssl.crt
 
 ls -l /etc/apache2/ssl.key
+
+
+
+enés razón. Hasta ahora solo validamos el certificado actual; todavía no seguimos el procedimiento que te pasaron para generar la solicitud y renovar.
+
+Por lo que muestran las capturas, el flujo correcto es este:
+
+1. Generar la clave privada y el CSR
+
+Como root, creá un directorio de trabajo:
+
+mkdir -p /root/cert-renewal && cd /root/cert-renewal
+
+Generá la clave privada:
+
+openssl genrsa -out ohevcn0baave011.key 2048
+
+Generá el CSR:
+
+openssl req -new -key ohevcn0baave011.key -out ohevcn0baave011.csr
+
+Cuando te pida los datos, usá:
+
+Country Name: ES
+State or Province: Madrid
+Locality: Madrid
+Organization: GRUPO SANTANDER
+Organizational Unit: SGT
+Common Name: ohevcn0baave011.baas.stng.cloudcenter.corp
+Email Address: BaaSOperations@gruposantander.com
+
+Los campos opcionales de challenge password y company name, dejalos vacíos.
+
+2. Validar el CSR antes de enviarlo
+openssl req -in ohevcn0baave011.csr -noout -text
+
+Y, más directo:
+
+openssl req -in ohevcn0baave011.csr -noout -subject
+
+Debería mostrar el CN correcto.
+
+3. Pedir el certificado por SNOW
+
+Adjuntás:
+
+ohevcn0baave011.csr
+
+La clave privada:
+
+ohevcn0baave011.key
+
+no se envía. Se queda en el servidor.
+
+4. Cuando te devuelvan el certificado
+
+Te deberían entregar algo parecido a:
+
+ohevcn0baave011.cer
+rootca.crt
+intermediate.crt
+
+Para Avamar 19.3, el procedimiento de tus capturas indica convertir y armar la cadena:
+
+openssl x509 -in rootca.crt -out rootca.pem -outform PEM
+openssl x509 -in intermediate.crt -out intermediate.pem -outform PEM
+cat intermediate.pem rootca.pem > bundle.pem
+
+También convierte la clave a PKCS#1:
+
+openssl rsa -in ohevcn0baave011.key -out key.key
+
+Después, por la GUI de Avamar:
+
+System
+→ Private Key
+→ Replace
+
+Cargás:
+
+Private Key: key.key
+Certificate: ohevcn0baave011.cer
+Certificate Chain: bundle.pem
+
+Eso sí coincide con el procedimiento que te mandaron. El siguiente paso concreto ahora es generar el CSR y pedir el certificado por SNOW.
