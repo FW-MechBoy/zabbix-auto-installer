@@ -72,3 +72,33 @@ openssl x509 -in ohevcn0baave011.cer -noout -subject -issuer -dates
 openssl x509 -in ohevcn0baave011.cer -noout -modulus | openssl md5
 openssl rsa -in ohevcn0baave011.key -noout -modulus | openssl md5
 
+Ahora prepará los archivos para AUI reutilizando la cadena actual, porque el emisor sigue siendo el mismo.
+
+Entrá como root:
+
+su -
+
+Copiá la cadena actual sin modificarla:
+
+cp /etc/apache2/ssl.crt/ca-bundle.crt /home/admin/certificados/ohevcn0baave011-2026/ca-bundle.crt
+chown admin:admin /home/admin/certificados/ohevcn0baave011-2026/ca-bundle.crt
+exit
+
+De nuevo como admin:
+
+cd ~/certificados/ohevcn0baave011-2026
+openssl rsa -in ohevcn0baave011.key -out key.key
+chmod 600 key.key
+openssl verify -CAfile ca-bundle.crt ohevcn0baave011.cer
+
+El último comando tiene que devolver:
+
+ohevcn0baave011.cer: OK
+
+Después tendremos los tres archivos para cargar:
+
+Private Key:        key.key
+Certificate:        ohevcn0baave011.cer
+Certificate Chain:  ca-bundle.crt
+
+No reemplaces todavía nada en AUI hasta comprobar que devuelve OK.
