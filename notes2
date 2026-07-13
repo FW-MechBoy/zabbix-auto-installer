@@ -104,3 +104,6 @@ Certificate Chain:  ca-bundle.crt
 No reemplaces todavía nada en AUI hasta comprobar que devuelve OK.
 
 openssl x509 -in ohevcn0baave011.cer -noout -text | grep -A1 "Subject Alternative Name"
+
+
+echo | openssl s_client -connect localhost:443 -servername ohevcn0baave011.baas.stng.cloudcenter.corp 2>/dev/null | openssl x509 -noout -subject -issuer -dates
