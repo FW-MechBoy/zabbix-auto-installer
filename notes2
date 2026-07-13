@@ -64,3 +64,11 @@ La clave:
 /home/admin/certificados/ohevcn0baave011-2026/ohevcn0baave011.key
 
 no se pega en ServiceNow, no se envía y no se borra. Esa clave será necesaria cuando llegue el certificado firmado.
+
+
+cd ~/certificados/ohevcn0baave011-2026
+openssl x509 -in ohevcn0baave011.cer -noout -subject -issuer -dates
+
+openssl x509 -in ohevcn0baave011.cer -noout -modulus | openssl md5
+openssl rsa -in ohevcn0baave011.key -noout -modulus | openssl md5
+
