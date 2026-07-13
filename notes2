@@ -107,3 +107,28 @@ openssl x509 -in ohevcn0baave011.cer -noout -text | grep -A1 "Subject Alternativ
 
 
 echo | openssl s_client -connect localhost:443 -servername ohevcn0baave011.baas.stng.cloudcenter.corp 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+
+
+su -
+
+Ejecutá estas líneas, una por una:
+
+cd /home/admin/certificados/ohevcn0baave011-2026
+cp -p /etc/apache2/ssl.crt/server.crt /etc/apache2/ssl.crt/server.crt.bak
+cp -p /etc/apache2/ssl.key/server.key /etc/apache2/ssl.key/server.key.bak
+cp ohevcn0baave011.cer /etc/apache2/ssl.crt/server.crt
+cp key.key /etc/apache2/ssl.key/server.key
+cp ca-bundle.crt /etc/apache2/ssl.crt/ca-bundle.crt
+chown wwwrun:www /etc/apache2/ssl.crt/server.crt /etc/apache2/ssl.crt/ca-bundle.crt
+chmod 600 /etc/apache2/ssl.crt/server.crt /etc/apache2/ssl.crt/ca-bundle.crt /etc/apache2/ssl.key/server.key
+service apache2 restart
+
+El procedimiento que pasaste usa justamente copia del certificado, la clave y el bundle, permisos y reinicio de Apache como alternativa por CLI.
+
+Validá inmediatamente:
+
+echo | openssl s_client -connect localhost:443 2>/dev/null | openssl x509 -noout -issuer -dates
+
+Tiene que mostrar:
+
+notAfter=Aug 14 18:13:35 2027 GMT
