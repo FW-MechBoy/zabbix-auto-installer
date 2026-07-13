@@ -102,3 +102,5 @@ Certificate:        ohevcn0baave011.cer
 Certificate Chain:  ca-bundle.crt
 
 No reemplaces todavía nada en AUI hasta comprobar que devuelve OK.
+
+openssl x509 -in ohevcn0baave011.cer -noout -text | grep -A1 "Subject Alternative Name"
