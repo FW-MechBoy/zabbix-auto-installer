@@ -1,15 +1,5 @@
-Hola David,
-
-Estuve revisando el servidor y pude completar la instalación e inicialización de PostgreSQL 18, dejando el servicio funcionando correctamente.
-
-El inconveniente actual es la instalación de TimescaleDB. La extensión no se encuentra instalada y el servidor no dispone de las herramientas necesarias para compilarla (gcc, make, cmake, postgresql18-devel). Adicionalmente, el equipo no tiene repositorios configurados (No repositories available), no posee salida a Internet y, por las restricciones del entorno, tampoco es posible incorporar paquetes o una ISO de forma manual.
-
-En estas condiciones no es posible instalar TimescaleDB desde el servidor.
-
-Para poder continuar sería necesario contar con alguna de las siguientes alternativas:
-
-un repositorio interno con los paquetes requeridos;
-el RPM aprobado de TimescaleDB compatible con PostgreSQL 18 y RHEL 9;
-o una vía aprobada para instalar las dependencias de compilación (gcc, make, cmake y postgresql18-devel).
-
-Quedo atento a cómo prefieren proceder.
+find / -type f \( -name "*.crt" -o -name "*.pem" -o -name "*.cer" \) 2>/dev/null | while read cert; do
+    if openssl x509 -in "$cert" -noout >/dev/null 2>&1; then
+        echo "$(openssl x509 -in "$cert" -noout -enddate | cut -d= -f2)|$cert"
+    fi
+done | sort
