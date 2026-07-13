@@ -7,3 +7,60 @@ echo | openssl s_client -connect localhost:443 -servername "$(hostname -f)" 2>/d
 
 
 find ~ -maxdepth 4 -type f \( -iname "*.csr" -o -iname "*.crs" -o -iname "*.key" \) -ls 2>/dev/null
+
+
+
+Ese campo no se puede completar todavía con texto inventado: hay que generar el CSR en el Avamar.
+
+Como usuario admin, ejecutá:
+
+mkdir -p ~/certificados/ohevcn0baave011-2026
+cd ~/certificados/ohevcn0baave011-2026
+umask 077
+
+Creá la configuración:
+
+cat > csr.conf <<'EOF'
+[req]
+prompt = no
+default_bits = 2048
+default_md = sha256
+distinguished_name = dn
+req_extensions = san
+
+[dn]
+C = ES
+ST = Madrid
+L = Madrid
+O = GRUPO SANTANDER
+OU = SGT
+CN = ohevcn0baave011.baas.stng.cloudcenter.corp
+emailAddress = BaasOperations@gruposantander.com
+
+[san]
+subjectAltName = DNS:ohevcn0baave011.baas.stng.cloudcenter.corp,DNS:ohevcn0baave011.vcf01.stng.cloudcenter.corp
+EOF
+
+Generá la clave y el CSR:
+
+openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout ohevcn0baave011.key -out ohevcn0baave011.csr -config csr.conf
+
+Validalo:
+
+openssl req -in ohevcn0baave011.csr -noout -subject -text | grep -A2 "Subject Alternative Name"
+
+Después mostralo:
+
+cat ohevcn0baave011.csr
+
+Copiá en el campo CSR todo el contenido, incluyendo:
+
+-----BEGIN CERTIFICATE REQUEST-----
+...
+-----END CERTIFICATE REQUEST-----
+
+La clave:
+
+/home/admin/certificados/ohevcn0baave011-2026/ohevcn0baave011.key
+
+no se pega en ServiceNow, no se envía y no se borra. Esa clave será necesaria cuando llegue el certificado firmado.
