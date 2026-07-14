@@ -36,3 +36,9 @@ openssl req -in ohevcn0baave013.csr -noout -verify -subject
 cat ohevcn0baave013.csr
 
 
+cd ~/certificados/ohevcn0baave013-2026
+openssl x509 -in ohevcn0baave013.cer -noout -subject -issuer -dates
+openssl x509 -in ohevcn0baave013.cer -noout -modulus | openssl md5
+openssl rsa -in ohevcn0baave013.key -noout -modulus | openssl md5
+
+
