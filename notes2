@@ -42,3 +42,7 @@ openssl x509 -in ohevcn0baave013.cer -noout -modulus | openssl md5
 openssl rsa -in ohevcn0baave013.key -noout -modulus | openssl md5
 
 
+
+su -c 'set -e; d=/home/admin/certificados/ohevcn0baave013-2026; n=$(openssl x509 -in $d/ohevcn0baave013.cer -noout -startdate|cut -d= -f2-); [ $(date -u +%s) -ge $(date -u -d "$n" +%s) ] || { echo "ERROR: certificado aun no vigente: $n"; exit 1; }; openssl verify -CAfile /etc/apache2/ssl.crt/ca-bundle.crt $d/ohevcn0baave013.cer; [ "$(openssl x509 -in $d/ohevcn0baave013.cer -noout -modulus|openssl md5)" = "$(openssl rsa -in $d/ohevcn0baave013.key -noout -modulus|openssl md5)" ] || { echo "ERROR: certificado y clave no coinciden"; exit 1; }; t=$(date +%Y%m%d-%H%M%S); cp -p /etc/apache2/ssl.crt/server.crt /etc/apache2/ssl.crt/server.crt.$t.bak; cp -p /etc/apache2/ssl.key/server.key /etc/apache2/ssl.key/server.key.$t.bak; openssl rsa -in $d/ohevcn0baave013.key -out $d/key.key; chown admin:admin $d/key.key; chmod 600 $d/key.key; cat $d/ohevcn0baave013.cer >/etc/apache2/ssl.crt/server.crt; cat $d/key.key >/etc/apache2/ssl.key/server.key; apache2ctl configtest; service apache2 restart; echo | openssl s_client -connect localhost:443 -servername ohevcn0baave013.vcf01.stng.cloudcenter.corp 2>/dev/null | openssl x509 -noout -subject -issuer -dates'
+
+
