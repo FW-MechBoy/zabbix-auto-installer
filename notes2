@@ -1,102 +1,38 @@
-Usamos este comando para Verificar la fecha de expiración del certificado.-
+cd ~/certificados
+rm -rf ohevcn0baave013-2026
+mkdir ohevcn0baave013-2026
+cd ohevcn0baave013-2026
 
-echo | openssl s_client -connect localhost:443 2>/dev/null | openssl x509 -noout -subject -issuer -dates
 
-
-cat > ~/generar_csr_avamar.sh <<'EOF'
-#!/bin/bash
-set -euo pipefail
-
-N="${1:-}"
-
-if [[ ! "$N" =~ ^[0-9]{3}$ ]]; then
-    echo "Uso: $0 013"
-    exit 1
-fi
-
-HOST="ohevcn0baave${N}"
-DIR="${HOME}/certificados/${HOST}-$(date +%Y)"
-
-mkdir -p "$DIR"
-chmod 700 "$DIR"
-cd "$DIR"
-umask 077
-
-if [[ -e "${HOST}.key" || -e "${HOST}.csr" ]]; then
-    echo "ERROR: ya existen archivos para ${HOST} en ${DIR}"
-    exit 1
-fi
-
-echo | openssl s_client -connect localhost:443 2>/dev/null \
-    | openssl x509 -out current.crt
-
-SUBJECT="$(openssl x509 -in current.crt -noout -subject | sed 's/^subject= *//')"
-
-SAN="$(openssl x509 -in current.crt -noout -text \
-    | awk '/Subject Alternative Name/{getline; gsub(/^[[:space:]]+/,""); print; exit}')"
-
-if ! echo "$SUBJECT" | grep -q "CN=${HOST}\."; then
-    echo "ERROR: el certificado encontrado no corresponde a ${HOST}"
-    echo "Subject detectado: ${SUBJECT}"
-    exit 1
-fi
-
-if [[ -z "$SAN" ]]; then
-    echo "ERROR: el certificado actual no contiene SAN"
-    exit 1
-fi
-
-cat > csr.conf <<CFG
+cat > csr.conf <<'EOF'
 [ req ]
 prompt = no
+default_bits = 2048
 default_md = sha256
 distinguished_name = dn
 req_extensions = req_ext
 
 [ dn ]
+C = ES
+ST = Madrid
+L = Madrid
+O = GRUPO SANTANDER
+OU = SGT
+CN = ohevcn0baave013.vcf01.stng.cloudcenter.corp
+emailAddress = BaasOperations@gruposantander.com
 
 [ req_ext ]
-subjectAltName = ${SAN}
-CFG
+subjectAltName = @alt_names
 
-openssl genrsa -out "${HOST}.key" 2048
-
-openssl req \
-    -new \
-    -sha256 \
-    -key "${HOST}.key" \
-    -out "${HOST}.csr" \
-    -config csr.conf \
-    -subj "$SUBJECT"
-
-chmod 600 "${HOST}.key"
-
-echo
-echo "===== CSR GENERADO ====="
-openssl req -in "${HOST}.csr" -noout -subject -text \
-    | grep -A2 -E "Subject:|Subject Alternative Name"
-
-echo
-echo "CSR: ${DIR}/${HOST}.csr"
-echo "KEY: ${DIR}/${HOST}.key"
-echo
-echo "===== CONTENIDO PARA SNOW ====="
-cat "${HOST}.csr"
+[ alt_names ]
+DNS.1 = ohevcn0baave013.vcf01.stng.cloudcenter.corp
 EOF
 
-chmod 700 ~/generar_csr_avamar.sh
+umask 077
+openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout ohevcn0baave013.key -out ohevcn0baave013.csr -config csr.conf
 
+openssl req -in ohevcn0baave013.csr -noout -verify -subject
 
-su -
-chown admin:admin /home/admin/certificados
-chmod 700 /home/admin/certificados
-exit
-
-
-sed -i '/^\[ dn \]$/a CN = placeholder' ~/generar_csr_avamar.sh
-rm -rf ~/certificados/ohevcn0baave013-2026
-~/generar_csr_avamar.sh 013
-
-
+cat ohevcn0baave013.csr
 
 
