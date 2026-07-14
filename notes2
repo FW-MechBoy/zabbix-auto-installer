@@ -85,3 +85,18 @@ cat "${HOST}.csr"
 EOF
 
 chmod 700 ~/generar_csr_avamar.sh
+
+
+su -
+chown admin:admin /home/admin/certificados
+chmod 700 /home/admin/certificados
+exit
+
+
+sed -i '/^\[ dn \]$/a CN = placeholder' ~/generar_csr_avamar.sh
+rm -rf ~/certificados/ohevcn0baave013-2026
+~/generar_csr_avamar.sh 013
+
+
+
+
