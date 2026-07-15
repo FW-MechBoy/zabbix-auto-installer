@@ -451,7 +451,7 @@ ID               Status  Error Code Start Time            Elapsed     End Time  
 
 admin@CCCVBO1APAVS001:~/>:
 
-
+for s in Silver Gold Platinum; do echo "=== $s ==="; mccli schedule show --domain=/ --name="$s" --verbose=true 2>/dev/null | grep -E '^(Native Timezone|Next Run Time|Start Time|Backup Window Duration|Repeat|Days of Week)'; done
 
 
 
