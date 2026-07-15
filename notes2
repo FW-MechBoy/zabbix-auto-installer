@@ -212,6 +212,244 @@ The technical execution will be performed by Dell Support. The BaaS team will mo
 echo "=== HORA DEL SERVIDOR ==="; date; echo "=== SCHEDULES DE BACKUP ==="; mccli schedule show --domain=/ --recursive=true; echo "=== GRUPOS/POLITICAS ==="; mccli group show --domain=/ --recursive=true; echo "=== VENTANA DE MANTENIMIENTO ==="; avmaint schedule --ava; echo "=== ACTIVIDADES CORRIENDO AHORA ==="; mccli activity show --active
 
 
+admin@CCCVBO1APAVS001:~/>: echo "=== HORA DEL SERVIDOR ==="; date; echo "=== SCHEDULES DE BACKUP ==="; mccli schedule show --domain=/ --recursive=true; echo "=== GRUPOS/POLITICAS ==="; mccli group show --domain=/ --recursive=true; echo "=== VENTANA DE MANTENIMIENTO ==="; avmaint schedule --ava; echo "=== ACTIVIDADES CORRIENDO AHORA ==="; mccli activity show --active
+=== HORA DEL SERVIDOR ===
+Wed Jul 15 15:47:30 CEST 2026
+=== SCHEDULES DE BACKUP ===
+Can't load log handler "java.util.logging.FileHandler"
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+        at java.io.FileOutputStream.open0(Native Method)
+        at java.io.FileOutputStream.open(FileOutputStream.java:270)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:133)
+        at java.util.logging.FileHandler.open(FileHandler.java:229)
+        at java.util.logging.FileHandler.openFiles(FileHandler.java:572)
+        at java.util.logging.FileHandler.<init>(FileHandler.java:282)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+        at java.lang.Class.newInstance(Class.java:445)
+        at java.util.logging.LogManager$5.run(LogManager.java:966)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at java.util.logging.LogManager.loadLoggerHandlers(LogManager.java:958)
+        at java.util.logging.LogManager.initializeGlobalHandlers(LogManager.java:1578)
+        at java.util.logging.LogManager.access$1500(LogManager.java:145)
+        at java.util.logging.LogManager$RootLogger.accessCheckedHandlers(LogManager.java:1667)
+        at java.util.logging.Logger.getHandlers(Logger.java:1777)
+        at java.util.logging.Logger.log(Logger.java:735)
+        at java.util.logging.Logger.doLog(Logger.java:765)
+        at java.util.logging.Logger.log(Logger.java:788)
+        at java.util.logging.Logger.fine(Logger.java:1516)
+        at com.avamar.mc.dpn.ExecuteCommand.createTimer(ExecuteCommand.java:689)
+        at com.avamar.mc.dpn.ExecuteCommand.getCommandResults(ExecuteCommand.java:466)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:242)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:198)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:192)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:184)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:92)
+        at com.avamar.mc.dpn.LockBoxCommand.getKeyStorePwd(LockBoxCommand.java:35)
+        at com.avamar.mc.cli.MCCLI.main(MCCLI.java:73)
+0,23000,CLI command completed successfully.
+Schedule                     Domain
+---------------------------- ------
+Bronze                       /
+CRTL-M                       /
+Daily Schedule               /
+Daily_integ                  /
+Daily_integ2                 /
+Default Replication Schedule /
+Default Schedule             /
+Default Tiering Schedule     /
+Evaluation Schedule          /
+Gold                         /
+Monthly_integ                /
+Monthly_integ2               /
+Notification Schedule        /
+Override Daily Schedule      /
+Platinum                     /
+SERV_MGMT                    /
+Silver                       /
+Statistics Schedule          /
+Usage Intelligence Schedule  /
+Weekly_integ                 /
+Weekly_integ2                /
+Yearly_integ                 /
+Yearly_integ2                /
+replica                      /
+on-demand                    /EDP
+
+=== GRUPOS/POLITICAS ===
+Can't load log handler "java.util.logging.FileHandler"
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+        at java.io.FileOutputStream.open0(Native Method)
+        at java.io.FileOutputStream.open(FileOutputStream.java:270)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:133)
+        at java.util.logging.FileHandler.open(FileHandler.java:229)
+        at java.util.logging.FileHandler.openFiles(FileHandler.java:572)
+        at java.util.logging.FileHandler.<init>(FileHandler.java:282)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+        at java.lang.Class.newInstance(Class.java:445)
+        at java.util.logging.LogManager$5.run(LogManager.java:966)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at java.util.logging.LogManager.loadLoggerHandlers(LogManager.java:958)
+        at java.util.logging.LogManager.initializeGlobalHandlers(LogManager.java:1578)
+        at java.util.logging.LogManager.access$1500(LogManager.java:145)
+        at java.util.logging.LogManager$RootLogger.accessCheckedHandlers(LogManager.java:1667)
+        at java.util.logging.Logger.getHandlers(Logger.java:1777)
+        at java.util.logging.Logger.log(Logger.java:735)
+        at java.util.logging.Logger.doLog(Logger.java:765)
+        at java.util.logging.Logger.log(Logger.java:788)
+        at java.util.logging.Logger.fine(Logger.java:1516)
+        at com.avamar.mc.dpn.ExecuteCommand.createTimer(ExecuteCommand.java:689)
+        at com.avamar.mc.dpn.ExecuteCommand.getCommandResults(ExecuteCommand.java:466)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:242)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:198)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:192)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:184)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:92)
+        at com.avamar.mc.dpn.LockBoxCommand.getKeyStorePwd(LockBoxCommand.java:35)
+        at com.avamar.mc.cli.MCCLI.main(MCCLI.java:73)
+0,23000,CLI command completed successfully.
+Group                                    Domain                              Type        Auto Proxy Mapping Rule       Rule Enabled
+---------------------------------------- ----------------------------------- ----------- ------------------ ---------- ------------
+Default Group                            /                                   Normal      false              Empty Rule false
+Default Proxy Group                      /                                   Normal      false              Empty Rule false
+Backup_FS_LIN_Bronze                     /EDP                                Normal      true               Empty Rule false
+Backup_FS_LIN_Gold                       /EDP                                Normal      true               Empty Rule false
+Backup_FS_LIN_Silver                     /EDP                                Normal      true               Empty Rule false
+Backup_FS_MASTER_LIN_Gold                /EDP                                Normal      true               Empty Rule false
+Backup_HARBBOR3_FS_LIN_Gold              /EDP                                Normal      true               Empty Rule false
+CCC                                      /EDP                                Normal      true               Empty Rule false
+GLOBAL_PAAS                              /EDP                                Normal      false              Empty Rule false
+HarborS2_FS_LIN_Bronze                   /EDP                                Normal      true               Empty Rule false
+HarborS2_FS_LIN_Gold                     /EDP                                Normal      true               Empty Rule false
+HarborS2_FS_LIN_Silver                   /EDP                                Normal      true               Empty Rule false
+HarborS_FS_LIN_Bronze                    /EDP                                Normal      true               Empty Rule false
+HarborS_FS_LIN_Silver                    /EDP                                Normal      true               Empty Rule false
+Harborm_FS_LIN_Gold                      /EDP                                Normal      true               Empty Rule false
+Harbors_FS_LIN_Gold                      /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm2_DAILY_Gold    /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm2_MONTHLY_Gold  /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm2_WEEKLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm2_YEARLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm_DAILY_Gold     /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm_MONTHLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm_WEEKLY_Gold    /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm_YEARLY_Gold    /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harborm_YEARLY_Gold.2  /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_DAILY_Gold    /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_DAILY_Gold.2  /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_MONTHLY_Gold  /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_WEEKLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_YEARLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors2_YEARLY_Gold.2 /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors_DAILY_Gold     /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors_MONTHLY_Gold   /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors_WEEKLY_Gold    /EDP                                Normal      true               Empty Rule false
+POLICY_postgresql_harbors_YEARLY_Gold    /EDP                                Normal      true               Empty Rule false
+Postgresql_Harbor_Bronze                 /EDP                                Normal      true               Empty Rule false
+Bronze_PRO                               /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Gold_PRO                                 /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor2_FS_LIN_Bronze                    /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor2_FS_LIN_Gold                      /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor2_FS_LIN_Silver                    /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor_FS_LIN_Bronze                     /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor_FS_LIN_Gold                       /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Harbor_FS_LIN_Silver                     /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+None_PRO                                 /EDP/ccc_portal.es.cloudcenter.corp Normal      false              Empty Rule false
+POLICY_Operator01_FS_Gold                /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Platinum_PRO                             /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Silver_PRO                               /EDP/ccc_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Bronze_PRO                               /EDP/wel_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Gold_PRO                                 /EDP/wel_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+None_PRO                                 /EDP/wel_portal.es.cloudcenter.corp Normal      false              Empty Rule false
+Platinum_PRO                             /EDP/wel_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Silver_PRO                               /EDP/wel_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+Policy_wtslvdrhelp0001_GOLD              /EDP/whb_portal.es.cloudcenter.corp Normal      true               Empty Rule false
+replica                                  /                                   Replication false              Empty Rule false
+
+=== VENTANA DE MANTENIMIENTO ===
+ERROR: avmaint: no such command: 'schedule'
+Try `avmaint --help' for more information.
+=== ACTIVIDADES CORRIENDO AHORA ===
+Can't load log handler "java.util.logging.FileHandler"
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+java.io.FileNotFoundException: /home/admin/.avamardata/var/mc/cli_log/mccli.log.0 (Permission denied)
+        at java.io.FileOutputStream.open0(Native Method)
+        at java.io.FileOutputStream.open(FileOutputStream.java:270)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:133)
+        at java.util.logging.FileHandler.open(FileHandler.java:229)
+        at java.util.logging.FileHandler.openFiles(FileHandler.java:572)
+        at java.util.logging.FileHandler.<init>(FileHandler.java:282)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+        at java.lang.Class.newInstance(Class.java:445)
+        at java.util.logging.LogManager$5.run(LogManager.java:966)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at java.util.logging.LogManager.loadLoggerHandlers(LogManager.java:958)
+        at java.util.logging.LogManager.initializeGlobalHandlers(LogManager.java:1578)
+        at java.util.logging.LogManager.access$1500(LogManager.java:145)
+        at java.util.logging.LogManager$RootLogger.accessCheckedHandlers(LogManager.java:1667)
+        at java.util.logging.Logger.getHandlers(Logger.java:1777)
+        at java.util.logging.Logger.log(Logger.java:735)
+        at java.util.logging.Logger.doLog(Logger.java:765)
+        at java.util.logging.Logger.log(Logger.java:788)
+        at java.util.logging.Logger.fine(Logger.java:1516)
+        at com.avamar.mc.dpn.ExecuteCommand.createTimer(ExecuteCommand.java:689)
+        at com.avamar.mc.dpn.ExecuteCommand.getCommandResults(ExecuteCommand.java:466)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:242)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:198)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:192)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:184)
+        at com.avamar.mc.dpn.ExecuteCommand.exec(ExecuteCommand.java:92)
+        at com.avamar.mc.dpn.LockBoxCommand.getKeyStorePwd(LockBoxCommand.java:35)
+        at com.avamar.mc.cli.MCCLI.main(MCCLI.java:73)
+0,23000,CLI command completed successfully.
+ID               Status  Error Code Start Time            Elapsed     End Time              Type               Progress Bytes New Bytes Client                            Domain                                   
+---------------- ------- ---------- --------------------- ----------- --------------------- ------------------ -------------- --------- --------------------------------- -------------------------------------------
+1784114745522438 Running 0          2026-07-15 13:25 CEST 02h:21m:47s 2026-07-15 19:15 CEST Replication Source 3.3 TB         1.1%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784122026844878 Running 0          2026-07-15 15:27 CEST 00h:20m:03s 2026-07-15 19:15 CEST Replication Source 234.0 GB       1.2%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784118828427044 Running 0          2026-07-15 14:34 CEST 01h:13m:22s 2026-07-15 19:15 CEST Replication Source 1.5 TB         0.8%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784118611038090 Running 0          2026-07-15 14:30 CEST 01h:17m:23s 2026-07-15 19:15 CEST Replication Source 1.6 TB         0.9%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784122578140087 Running 0          2026-07-15 15:36 CEST 00h:11m:00s 2026-07-15 19:15 CEST Replication Source 12.2 KB        100%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784121686411359 Running 0          2026-07-15 15:21 CEST 00h:26m:05s 2026-07-15 19:15 CEST Replication Source 468.0 GB       0.7%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784116567256845 Running 0          2026-07-15 13:56 CEST 01h:51m:06s 2026-07-15 19:15 CEST Replication Source 2.3 TB         1.2%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784120545869345 Running 0          2026-07-15 15:02 CEST 00h:45m:12s 2026-07-15 19:15 CEST Replication Source 936.0 GB       0.8%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784118888682811 Running 0          2026-07-15 14:35 CEST 01h:12m:22s 2026-07-15 19:15 CEST Replication Source 1.7 TB         2.9%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784118195681317 Running 0          2026-07-15 14:23 CEST 01h:23m:56s 2026-07-15 19:15 CEST Replication Source 127.7 KB       100%      bvmnglionhtp101.nngg.corp         /EDP/cib_portal.es.cloudcenter.corp
+1784122107509909 Running 0          2026-07-15 15:28 CEST 00h:19m:03s 2026-07-15 19:15 CEST Replication Source 138.0 GB       0.5%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784118334477911 Running 0          2026-07-15 14:25 CEST 01h:21m:55s 2026-07-15 19:15 CEST Replication Source 1.6 TB         0.9%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784122174611646 Running 0          2026-07-15 15:29 CEST 00h:18m:03s 2026-07-15 19:15 CEST Replication Source 24.2 KB        100%      bvmnglapacp15.nngg.corp           /EDP/cib_portal.es.cloudcenter.corp
+9178410690122909 Running 0          2026-07-15 11:15 CEST 04h:32m:25s 2026-07-15 19:15 CEST Replication Source 306.3 TB       0.9%      cccvbo1apavs001.cloudcenter.corp  /MC_SYSTEM/cccvbo1apavs001.cloudcenter.corp
+1784112639335984 Running 0          2026-07-15 12:51 CEST 02h:56m:29s 2026-07-15 19:15 CEST Replication Source 3.0 TB         3%        vmngidpmp01.ngl.corp              /EDP/wel_portal.es.cloudcenter.corp
+1784120627252977 Running 0          2026-07-15 15:03 CEST 00h:43m:41s 2026-07-15 19:15 CEST Replication Source 837.6 GB       0.7%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784119404787100 Running 0          2026-07-15 14:43 CEST 01h:03m:49s 2026-07-15 19:15 CEST Replication Source 1.3 TB         0.7%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784112476683448 Running 0          2026-07-15 12:48 CEST 02h:59m:30s 2026-07-15 19:15 CEST Replication Source 3.0 TB         4.1%      vmngidpmp01.ngl.corp              /EDP/wel_portal.es.cloudcenter.corp
+1784122178475986 Running 0          2026-07-15 15:30 CEST 00h:17m:33s 2026-07-15 19:15 CEST Replication Source 18.8 KB        100%      wealccpostp0002.nngg.corp         /EDP/wel_portal.es.cloudcenter.corp
+1784120572628231 Running 0          2026-07-15 15:02 CEST 00h:44m:41s 2026-07-15 19:15 CEST Replication Source 30.5 KB        100%      srvsasbprlscb01.scger.corp        /EDP/scg_portal.es.cloudcenter.corp
+1784118317258469 Running 0          2026-07-15 14:25 CEST 01h:21m:55s 2026-07-15 19:15 CEST Replication Source 2.3 TB         0.6%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784120188644080 Running 0          2026-07-15 14:56 CEST 00h:50m:43s 2026-07-15 19:15 CEST Replication Source 972.6 GB       0.7%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784120922059705 Running 0          2026-07-15 15:08 CEST 00h:38m:39s 2026-07-15 19:15 CEST Replication Source 858.0 GB       0.8%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+1784118183411141 Running 0          2026-07-15 14:23 CEST 01h:24m:26s 2026-07-15 19:15 CEST Replication Source 2.0 TB         1%        wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784122652731704 Running 0          2026-07-15 15:37 CEST 00h:10m:00s 2026-07-15 19:15 CEST Replication Source 13.6 KB        100%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784120027044807 Running 0          2026-07-15 14:53 CEST 00h:53m:44s 2026-07-15 19:15 CEST Replication Source 96.8 KB        100%      vmngtrustusup01.ngl.corp          /EDP/wel_portal.es.cloudcenter.corp
+1784120943749920 Running 0          2026-07-15 15:09 CEST 00h:38m:09s 2026-07-15 19:15 CEST Replication Source 849.5 GB       1.4%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784119408693507 Running 0          2026-07-15 14:43 CEST 01h:03m:49s 2026-07-15 19:15 CEST Replication Source 1.5 TB         2%        wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784120235628890 Running 0          2026-07-15 14:57 CEST 00h:50m:13s 2026-07-15 19:15 CEST Replication Source 1.4 TB         2.1%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784121685351205 Running 0          2026-07-15 15:21 CEST 00h:26m:05s 2026-07-15 19:15 CEST Replication Source 138.0 GB       0.7%      wtswvdmsqlp0012.wtes.whitees.corp /EDP/whb_portal.es.cloudcenter.corp
+1784118581729402 Running 0          2026-07-15 14:29 CEST 01h:17m:54s 2026-07-15 19:15 CEST Replication Source 1.7 TB         0.7%      vmngsqmktp01.ngl.corp             /EDP/wel_portal.es.cloudcenter.corp
+
+admin@CCCVBO1APAVS001:~/>:
 
 
 
