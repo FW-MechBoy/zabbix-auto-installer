@@ -455,6 +455,8 @@ for s in Silver Gold Platinum; do echo "=== $s ==="; mccli schedule show --domai
 
 avmaint config --ava 2>/dev/null | grep -i -E 'maintenance|window|checkpoint|hfs|garbage'
 
+mccli server show-prop 2>/dev/null | grep -i -E 'maintenance|blackout|window|checkpoint|hfscheck|garbage'
+
 
 
 
