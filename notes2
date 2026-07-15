@@ -460,5 +460,7 @@ mccli server show-prop 2>/dev/null | grep -i -E 'maintenance|blackout|window|che
 grep -iE 'maintenance|blackout|window' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml 2>/dev/null
 su -c "grep -iE 'maintenance|blackout|window' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml"
 
+echo "=== $(hostname) ==="; date; for s in Bronze Silver Gold Platinum; do echo; echo "=== $s ==="; mccli schedule show --domain=/ --name="$s" --verbose=true 2>/dev/null | grep -E '^(Native Timezone|Next Run Time|Start Time|Backup Window Duration|Repeat|Days of Week)'; done; echo; echo "=== CHECKPOINTS ==="; mccli server show-prop 2>/dev/null | grep -iE 'Last checkpoint|Last validated checkpoint'
+
 
 
