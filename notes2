@@ -209,7 +209,7 @@ The activity will be performed during an approved maintenance window, after conf
 The technical execution will be performed by Dell Support. The BaaS team will monitor the activity and validate service recovery after completion.
 
 
-
+echo "=== HORA DEL SERVIDOR ==="; date; echo "=== SCHEDULES DE BACKUP ==="; mccli schedule show --domain=/ --recursive=true; echo "=== GRUPOS/POLITICAS ==="; mccli group show --domain=/ --recursive=true; echo "=== VENTANA DE MANTENIMIENTO ==="; avmaint schedule --ava; echo "=== ACTIVIDADES CORRIENDO AHORA ==="; mccli activity show --active
 
 
 
