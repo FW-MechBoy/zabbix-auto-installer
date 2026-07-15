@@ -1,12 +1,156 @@
-echo | openssl s_client -connect localhost:443 2>/dev/null | openssl x509 -noout -subject -issuer -dates -text | grep -E "subject=|issuer=|notBefore=|notAfter=|DNS:"
+sysadmin@CCCVBO1APDDS001# sysadmin@CCCVBO1APDDS001# ddboost show connections
 
+Active Clients: 7
 
-d=~/certificados/ohevcn0baave031-2026; mkdir -p "$d" && chmod 700 "$d" && cd "$d" && umask 077 && printf '%s\n' '[req]' 'prompt=no' 'default_bits=2048' 'default_md=sha256' 'distinguished_name=dn' 'req_extensions=req_ext' '' '[dn]' 'C=ES' 'ST=Madrid' 'L=Madrid' 'O=GRUPO SANTANDER' 'OU=SGT' 'CN=ohevcn0baave031.vcf01.stng.cloudcenter.corp' 'emailAddress=BaasOperations@gruposantander.com' '' '[req_ext]' 'subjectAltName=@alt_names' '' '[alt_names]' 'DNS.1=ohevcn0baave031.vcf01.stng.cloudcenter.corp' 'DNS.2=ohevcn0baave031.baas.stng.cloudcenter.corp' > csr.conf && openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout ohevcn0baave031.key -out ohevcn0baave031.csr -config csr.conf && openssl req -in ohevcn0baave031.csr -noout -verify -subject -text | grep -A2 -E 'verify OK|Subject:|Subject Alternative Name' && echo '===== CSR PARA SNOW =====' && cat ohevcn0baave031.csr
+Clients:
+Client                                  Idle     Plugin Version                                            OS Version                               Application Version   Encrypted   DSP   Transport
+-------------------------------------   ----   ----------------   ---------------------------------------------------   -----------------------------------------------   ---------   ---   ---------
+CCCVBO1APAVS001.cloudcenter.corp        NO     7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64          Avamar avtar 19.10.100-166_HF338864:1008          NO   YES        IPv4
+sanlccidb2p0090.santander.corp          NO     7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1009         YES   YES        IPv4
+stngdepm-adm.ngl.corp                   NO     7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+cccvbo1apavs003.cloudcenter.corp        NO     7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64   Avamar ddrmaint 19.10.0-166_HF338864:1749734712          NO   YES        IPv4
+CCCVBO1APAVS002.cloudcenter.corp        NO     7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64   Avamar ddrmaint 19.10.0-166_HF338864:1709808999          NO   YES        IPv4
+CCCVBO1APAVS001.cloudcenter.corp        NO     7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64   Avamar ddrmaint 19.10.0-166_HF338864:1706033429          NO   YES        IPv4
+CCCVBO1APAVS002.cloudcenter.corp        NO     7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64          Avamar avtar 19.10.100-166_HF338864:1008          NO   YES        IPv4
+CCCVBO1APAVS001.cloudcenter.corp        YES    7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64          Avamar avtar 19.10.100-166_HF338864:1001         YES   YES        IPv4
+sanwccmsqlp0004.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanwccmsqlp0004.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+stngdepm-adm.ngl.corp                   YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+scglccidb2p0037.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1009         YES   YES        IPv4
+weawccmsqlp0001.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2016 (build 14393), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanlccoracp0278.santander.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+sanlccoracp0257.santander.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorneup01.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+sanwccmsqlp0036.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+bvmnglorsamp03.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+bvmnglorsamp03.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1002         YES   YES        IPv4
+wtswvdmsqlp0012.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+BVMNGLORGEP01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+bvmnglorgsd01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+BVMNGLORGEP01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1002         YES   YES        IPv4
+weawccmsqlp0001.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2016 (build 14393), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+bvmnglorgsd01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1002         YES   YES        IPv4
+bvmnglorsamp01.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+sanwccmsqlp0023.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanwccmsqlp0036.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+VMNGSQMKTP01.NGL.CORP                   YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanlccoraci0050.santander.pre.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtswvdmsqli0002.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanwccmsqlp0023.san.corp                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+sanwccmsqli0002.presan.santander.corp   YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanlvdoraci0023.santander.pre.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0021.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0021.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+VMNGDBRAFMP01.NGL.CORP                  YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+sanwccmsqli0002.presan.santander.corp   YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+sanlccoraci0038.santander.pre.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0080.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoraci0006.scger.pre.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+sanlccoraci0052.santander.pre.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0080.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+scglccoraci0006.scger.pre.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+weawccmsqlp0004.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+scgwccmsqlp0001.GERADPRO.CORP           YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+scglccoracp0019.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+dbiprospvlsbg01.santanderde.corp        YES    7.12.0.0-1052569               Linux 2.6.32-754.53.1.el6.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0046.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorgsi01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0036.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0039.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0034.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorcigap01.nngg.corp               YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+vmnggtbsantxp01.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2016 (build 14393), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+scglccoracp0035.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0043.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracd0014.scger.dev.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorgsi01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+dbdunnpvlscb01.scger.corp               YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scgwccmsqlp0001.GERADPRO.CORP           YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+scglccoracd0012.scger.dev.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtslccoracp0007.unix.wtes.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.107.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorcigap01.nngg.corp               YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+scglccoracp0033.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0045.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0044.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+VMNGIDPMP01.NGL.CORP                    YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+VMNGDBRAFMI01.NGL.CORP                  YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+scglccoracp0013.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtslccoracp0007.unix.wtes.corp          YES    7.12.0.0-1052569           Linux 4.18.0-553.107.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+wtswccmsqli0001.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3006         YES   YES        IPv4
+bvmnglorsamp13.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+scglccoracp0079.scger.corp              YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+vmnggtbsantxp01.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2016 (build 14393), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+bvmnglorsamp13.nngg.corp                YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+VMNGDBRAFMP01.NGL.CORP                  YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+weawccmsqlp0004.NGL.CORP                YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+VMNGDBRAFMI01.NGL.CORP                  YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+VMNGIDPMP01.NGL.CORP                    YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+wealccoracp0001.nngg.corp               YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtswccmsqli0001.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+VMNGSQMKTP01.NGL.CORP                   YES    7.12.0.0-1052569   Microsoft Windows Server 2019 (build 17763), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+bvmnglorgep11.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wealccoracp0002.wealth.corp             YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtswvdmsqlp0012.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+bvmnglorgsp01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+bvmnglorgep21.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+wtswvdmsqli0002.wtes.whitees.corp       YES    7.12.0.0-1052569   Microsoft Windows Server 2022 (build 20348), 64-bit                   Avamar avtar 19.10.100-166:3001         YES   YES        IPv4
+bvmnglsqpmazp01.nngg.corp               YES    7.12.0.0-1052569           Linux 4.18.0-553.129.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+CCCVBO1APAVS002.cloudcenter.corp        YES    7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64              Avamar ddrmaint 19.10.0-166_HF338864          NO   YES        IPv4
+scglvdidb2p0017.scger.corp              YES    7.12.0.0-1052569             Linux 3.10.0-1160.153.1.el7.x86_64 x86_64                   Avamar avtar 19.10.100-166:1009         YES   YES        IPv4
+sanlccoracd0002.santander.dev.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+sanlccoracd0002.santander.dev.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+CCCVBO1APAVS002.cloudcenter.corp        YES    7.12.0.0-1052569                  Linux 4.12.14-122.283-default x86_64          Avamar avtar 19.10.100-166_HF338864:1040         YES   YES        IPv4
+bvmnglormbi01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.129.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1001         YES   YES        IPv4
+bvmnglormbi01.nngg.corp                 YES    7.12.0.0-1052569           Linux 4.18.0-553.129.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-135:1002         YES   YES        IPv4
+sanlccoracp0064.santander.corp          YES    7.12.0.0-1052569             Linux 3.10.0-1160.153.1.el7.x86_64 x86_64                   Avamar avtar 19.10.100-166:1001         YES   YES        IPv4
+sanlccoracp0064.santander.corp          YES    7.12.0.0-1052569             Linux 3.10.0-1160.153.1.el7.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+sanlvdoraci0023.santander.pre.corp      YES    7.12.0.0-1052569           Linux 4.18.0-553.137.1.el8_10.x86_64 x86_64                   Avamar avtar 19.10.100-166:1002         YES   YES        IPv4
+-------------------------------------   ----   ----------------   ---------------------------------------------------   -----------------------------------------------   ---------   ---   ---------
 
+ *   : indicates that multiple storage-units have been accessed by this client. The last accessed storage-unit is displayed.
 
-su -c 'set -u; d=/home/admin/certificados/ohevcn0baave031-2026; c=$d/ohevcn0baave031.cer; k=$d/ohevcn0baave031.key; [ -s "$c" ] || { echo "ERROR: no existe $c"; exit 1; }; [ -s "$k" ] || { echo "ERROR: no existe $k"; exit 1; }; openssl x509 -in "$c" -noout -subject -issuer -dates; txt=$(openssl x509 -in "$c" -noout -text) || exit 1; echo "$txt" | grep -q "DNS:ohevcn0baave031.vcf01.stng.cloudcenter.corp" || { echo "ERROR: falta SAN vcf01"; exit 1; }; echo "$txt" | grep -q "DNS:ohevcn0baave031.baas.stng.cloudcenter.corp" || { echo "ERROR: falta SAN baas"; exit 1; }; [ "$(openssl x509 -in "$c" -noout -modulus | openssl md5)" = "$(openssl rsa -in "$k" -noout -modulus 2>/dev/null | openssl md5)" ] || { echo "ERROR: certificado y clave no coinciden"; exit 1; }; openssl verify -CAfile /etc/apache2/ssl.crt/ca-bundle.crt "$c" || exit 1; t=$(date +%Y%m%d-%H%M%S); bc=/etc/apache2/ssl.crt/server.crt.$t.bak; bk=/etc/apache2/ssl.key/server.key.$t.bak; cp -p /etc/apache2/ssl.crt/server.crt "$bc" && cp -p /etc/apache2/ssl.key/server.key "$bk" || exit 1; tmp=$(mktemp /tmp/server-key.XXXXXX); openssl rsa -in "$k" -out "$tmp" >/dev/null 2>&1 || { rm -f "$tmp"; exit 1; }; chmod 600 "$tmp"; cat "$c" >/etc/apache2/ssl.crt/server.crt; cat "$tmp" >/etc/apache2/ssl.key/server.key; rm -f "$tmp"; if ! apache2ctl configtest || ! service apache2 restart; then echo "ERROR: restaurando certificado anterior"; cp -p "$bc" /etc/apache2/ssl.crt/server.crt; cp -p "$bk" /etc/apache2/ssl.key/server.key; service apache2 restart; exit 1; fi; sleep 3; esperado=$(openssl x509 -in "$c" -noout -fingerprint -sha256); activo=$(echo | openssl s_client -connect localhost:443 -servername ohevcn0baave031.baas.stng.cloudcenter.corp 2>/dev/null | openssl x509 -noout -fingerprint -sha256); if [ "$esperado" != "$activo" ]; then echo "ERROR: Apache no presentó el certificado nuevo; restaurando"; cp -p "$bc" /etc/apache2/ssl.crt/server.crt; cp -p "$bk" /etc/apache2/ssl.key/server.key; service apache2 restart; exit 1; fi; echo "INSTALACION OK"; echo | openssl s_client -connect localhost:443 -servername ohevcn0baave031.baas.stng.cloudcenter.corp 2>/dev/null | openssl x509 -noout -subject -issuer -dates -text | grep -E "subject=|issuer=|notBefore=|notAfter=|DNS:"'
+Client Connections:
+Max Client Connections: 1885
+-------------- ifgroup ------------   --------------- Client Connections -----------   - DD Connections -   -----
+                                                     ----- Control -----               ------ Data ------
+Group-name   Status             Interface   Write   Read   Src-repl   Dst-repl   Synthetic   Repl-out   Repl-in   Total
+----------   -------   ------------------   -----   ----   --------   --------   ---------   --------   -------   -----
+none                         10.200.107.9       0      0          0          0           0          0         0       0
+backup       enabled         22.90.166.11       0      0          5          0           0          0         0       5
+backup       enabled          22.90.166.9       0      0        151          0           0        174         0     325
+backup       enabled         22.90.166.10       0      0         21          0           0          0         0      21
+replica      enabled         22.90.166.12       0      0          0          0           0          0         0       0
+----------   -------         ------------   -----   ----   --------   --------   ---------   --------   -------   -----
+                       Total Connections:       0      0        177          0           0        174         0     351
+----------   -------   ------------------   -----   ----   --------   --------   ---------   --------   -------   -----
+sysadmin@CCCVBO1APDDS001#
+sysadmin@CCCVBO1APDDS001# nfs show clients
+Path                        Client         Options
+-------------------------   ------------   ----------------------------------------------------------
+/data/col1/sanDB2_backups   22.90.200.15   (sec=sys,rw,no_root_squash,no_all_squash,secure,version=3)
+/data/col1/welDB2_backups   22.90.200.15   (sec=sys,rw,no_root_squash,no_all_squash,secure,version=3)
+/data/col1/scgDB2_backups   22.90.200.15   (sec=sys,rw,no_root_squash,no_all_squash,secure,version=3)
+-------------------------   ------------   ----------------------------------------------------------
+sysadmin@CCCVBO1APDDS001#
+sysadmin@CCCVBO1APDDS001# replication show config
+CTX   Source                                                              Destination                                                         Connection                                       Low-bw-optim   Crepl-gc-bw-optim   Encryption    Enabled   Max-repl-
+                                                                                                                                              Host and Port                                                                       (Auth-mode)             streams
+---   -----------------------------------------------------------------   -----------------------------------------------------------------   ----------------------------------------------   ------------   -----------------   -----------   -------   ---------
+1     mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/scgDB2_backups   mtree://CCCVBO1APDDS001.cloudcenter.corp/data/col1/scgDB2_backups   CCCVBO2APDDS001.cloudcenter.corp*   (default)*   disabled       disabled            disabled      yes       32
+2     mtree://CCCVBO1APDDS001.cloudcenter.corp/data/col1/swfDB2_backups   mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/swfDB2_backups   CCCVBO2APDDS001.cloudcenter.corp    (default)    disabled       disabled            disabled      yes       32
+3     mtree://CCCVBO1APDDS001.cloudcenter.corp/data/col1/sanDB2_backups   mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/sanDB2_backups   CCCVBO2APDDS001.cloudcenter.corp    (default)    disabled       disabled            disabled      yes       32
+4     mtree://CCCVBO1APDDS001.cloudcenter.corp/data/col1/welDB2_backups   mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/welDB2_backups   CCCVBO2APDDS001.cloudcenter.corp    (default)    disabled       disabled            disabled      yes       32
+---   -----------------------------------------------------------------   -----------------------------------------------------------------   ----------------------------------------------   ------------   -----------------   -----------   -------   ---------
+DD System default Max-repl-streams per context: 32
 
-
-exit
-cd /home/ansible/DPA_JRE_Upgrade_apr-2026_8u491_linux
-./dpa_jre_upgrade_apr-2026_8u491_linux --install_path=/dpa
+ * Used for recovery only.
+sysadmin@CCCVBO1APDDS001#
+sysadmin@CCCVBO1APDDS001# replication status
+CTX   Destination                                                         Enabled   Connection   Sync'ed-as-of-time
+---   -----------------------------------------------------------------   -------   ----------   ------------------
+1     mtree://CCCVBO1APDDS001.cloudcenter.corp/data/col1/scgDB2_backups   yes       idle         Wed Jul 15 12:43
+2     mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/swfDB2_backups   yes       idle         Wed Jul 15 12:48
+3     mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/sanDB2_backups   yes       idle         Wed Jul 15 12:48
+4     mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/welDB2_backups   yes       idle         Wed Jul 15 12:48
+---   -----------------------------------------------------------------   -------   ----------   ------------------
+sysadmin@CCCVBO1APDDS001#
