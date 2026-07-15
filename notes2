@@ -457,6 +457,8 @@ avmaint config --ava 2>/dev/null | grep -i -E 'maintenance|window|checkpoint|hfs
 
 mccli server show-prop 2>/dev/null | grep -i -E 'maintenance|blackout|window|checkpoint|hfscheck|garbage'
 
+grep -iE 'maintenance|blackout|window' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml 2>/dev/null
+su -c "grep -iE 'maintenance|blackout|window' /usr/local/avamar/var/mc/server_data/prefs/mcserver.xml"
 
 
 
