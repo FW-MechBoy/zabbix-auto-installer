@@ -154,3 +154,24 @@ CTX   Destination                                                         Enable
 4     mtree://CCCVBO2APDDS001.cloudcenter.corp/data/col1/welDB2_backups   yes       idle         Wed Jul 15 12:48
 ---   -----------------------------------------------------------------   -------   ----------   ------------------
 sysadmin@CCCVBO1APDDS001#
+
+
+[BaaS] Offline drive firmware update N9C0 to NE70 - CCCVBO1APDDS001
+
+Perform an offline drive firmware update on Data Domain CCCVBO1APDDS001.
+
+Upgrade firmware from N9C0 to NE70 due to known availability issues affecting Hitachi HUS726040CLAR4000 3.6 TiB SAS drives.
+
+Affected drives/slots:
+7.1, 7.2, 7.3, 7.13, 7.14, 7.15, 7.25, 7.26, 7.27, 7.37, 7.38, 7.39, 7.49 and 7.51.
+
+Connected Avamar systems:
+- CCCVBO1APAVS001
+- CCCVBO1APAVS002
+- CCCVBO1APAVS003
+
+The activity requires a maintenance window. Backup, restore and replication activities must be paused before execution, as the Data Domain filesystem will be temporarily unavailable during the update.
+
+No physical component replacement is required.
+
+[BaaS] Offline drive firmware update N9C0 to NE70 - CCCVBO1APDDS001
