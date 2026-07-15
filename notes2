@@ -174,4 +174,49 @@ The activity requires a maintenance window. Backup, restore and replication acti
 
 No physical component replacement is required.
 
-[BaaS] Offline drive firmware update N9C0 to NE70 - CCCVBO1APDDS001
+Preventive firmware update required for Data Domain CCCVBO1APDDS001.
+
+Several Hitachi HUS726040CLAR4000 drives are running firmware N9C0, which has known availability issues. The drives must be updated to firmware NE70 according to the Dell procedure.
+
+
+1. Confirm that Data Domain CCCVBO1APDDS001 has no critical alerts, failed drives or disk rebuilds in progress.
+2. Pause scheduled backups, restores, maintenance activities and replication jobs associated with:
+   - CCCVBO1APAVS001
+   - CCCVBO1APAVS002
+   - CCCVBO1APAVS003
+3. Confirm that DD Boost, NFS and replication traffic is inactive.
+4. Upload the Dell offline drive firmware update package.
+5. Execute the N9C0 to NE70 firmware upgrade according to Dell KB 000384401.
+6. Monitor the upgrade until completion.
+7. Verify that the filesystem is running, all disks are operational and no new alerts are present.
+8. Re-enable backup, restore and replication activities.
+
+Impacted service: Backup as a Service.
+
+Planned impact:
+During the maintenance window, backups, restores and replication activities using CCCVBO1APDDS001 will be temporarily unavailable while the drive firmware is updated and the filesystem is restarted.
+
+No data loss is expected.
+
+Main risks:
+- Firmware update failure.
+- Extended filesystem unavailability.
+- Update interruption due to an existing disk rebuild or hardware issue.
+- Backup or restore job failure if activity is not stopped before the change.
+
+Mitigation:
+The activity will be performed during an approved maintenance window, after confirming system health and stopping all backup, restore and replication activity. The Dell documented procedure will be followed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
