@@ -206,7 +206,7 @@ Main risks:
 
 Mitigation:
 The activity will be performed during an approved maintenance window, after confirming system health and stopping all backup, restore and replication activity. The Dell documented procedure will be followed.
-
+The technical execution will be performed by Dell Support. The BaaS team will monitor the activity and validate service recovery after completion.
 
 
 
