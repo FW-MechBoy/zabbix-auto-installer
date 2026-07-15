@@ -464,3 +464,123 @@ echo "=== $(hostname) ==="; date; for s in Bronze Silver Gold Platinum; do echo;
 
 
 
+
+
+
+
+
+- CCCVBO1APAVS001
+admin@CCCVBO1APAVS001:~/>: echo "=== $(hostname) ==="; date; for s in Bronze Silver Gold Platinum; do echo; echo "=== $s ==="; mccli schedule show --domain=/ --name="$s" --verbose=true 2>/dev/null | grep -E '^(Native Timezone|Next Run Time|Start Time|Backup Window Duration|Repeat|Days of Week)'; done; echo; echo "=== CHECKPOINTS ==="; mccli server show-prop 2>/dev/null | grep -iE 'Last checkpoint|Last validated checkpoint'
+=== CCCVBO1APAVS001 ===
+Wed Jul 15 16:19:53 CEST 2026
+
+=== Bronze ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-16 12:00 AM
+Start Time                      12:00 AM Central European Summer Time
+Backup Window Duration          7 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Silver ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 10:00 PM
+Start Time                      10:00 PM Central European Summer Time
+Backup Window Duration          9 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Gold ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Platinum ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== CHECKPOINTS ===
+Last checkpoint                              2026-07-15 11:48:52 CEST
+Last validated checkpoint                    2026-07-15 10:23:36 CEST
+
+- CCCVBO1APAVS002
+admin@CCCVBO1APAVS002:~/>: echo "=== $(hostname) ==="; date; for s in Bronze Silver Gold Platinum; do echo; echo "=== $s ==="; mccli schedule show --domain=/ --name="$s" --verbose=true 2>/dev/null | grep -E '^(Native Timezone|Next Run Time|Start Time|Backup Window Duration|Repeat|Days of Week)'; done; echo; echo "=== CHECKPOINTS ==="; mccli server show-prop 2>/dev/null | grep -iE 'Last checkpoint|Last validated checkpoint'
+=== CCCVBO1APAVS002 ===
+Wed Jul 15 16:24:12 CEST 2026
+
+=== Bronze ===
+
+=== Silver ===
+
+=== Gold ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Platinum ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== CHECKPOINTS ===
+Last checkpoint                              2026-07-15 11:45:59 CEST
+Last validated checkpoint                    2026-07-15 10:51:30 CEST
+admin@CCCVBO1APAVS002:~/>:
+
+
+
+- CCCVBO1APAVS003
+admin@cccvbo1apavs003:~/>: echo "=== $(hostname) ==="; date; for s in Bronze Silver Gold Platinum; do echo; echo "=== $s ==="; mccli schedule show --domain=/ --name="$s" --verbose=true 2>/dev/null | grep -E '^(Native Timezone|Next Run Time|Start Time|Backup Window Duration|Repeat|Days of Week)'; done; echo; echo "=== CHECKPOINTS ==="; mccli server show-prop 2>/dev/null | grep -iE 'Last checkpoint|Last validated checkpoint'
+=== cccvbo1apavs003 ===
+Wed Jul 15 16:27:04 CEST 2026
+
+=== Bronze ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-16 12:00 AM
+Start Time                      12:00 AM Central European Summer Time
+Backup Window Duration          7 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Silver ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 10:00 PM
+Start Time                      10:00 PM Central European Summer Time
+Backup Window Duration          9 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Gold ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== Platinum ===
+Native Timezone                 Europe/Madrid
+Next Run Time                   2026-07-15 08:00 PM
+Start Time                      8:00 PM Central European Summer Time
+Backup Window Duration          11 hours and 50 minutes
+Repeat                          Weekly
+Days of Week                    Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
+=== CHECKPOINTS ===
+Last checkpoint                              2026-07-15 09:36:00 CEST
+Last validated checkpoint                    2026-07-15 09:13:38 CEST
+admin@cccvbo1apavs003:~/>:
+
