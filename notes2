@@ -898,3 +898,21 @@ Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd"
 Write-Host ""
 Write-Host "Para ejecutar incluyendo SSO Master Secret:"
 Write-Host "C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd"
+
+
+
+
+Pegá esto completo en PowerShell como Administrador. Te va a crear nuevamente:
+
+C:\BizTalkBackup\BizTalk-FullBackup.ps1
+C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd
+C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd
+
+
+Después ejecutás:
+
+C:\BizTalkBackup\Run-BizTalk-FullBackup.cmd
+
+Y para incluir SSO:
+
+C:\BizTalkBackup\Run-BizTalk-FullBackup-WithSSO.cmd
