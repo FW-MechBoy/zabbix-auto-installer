@@ -14,37 +14,34 @@ ls -lt /usr/local/avamar/var/client/*Replicate* 2>/dev/null | head -20
 mccli client show --domain=/MC_SYSTEM --recursive=true --verbose=true
 
 
-Impacted service: Backup as a Service.
+[BaaS] Failed DIMM B7 replacement – ohlpch2bavas001
 
-Planned impact:
-During the maintenance window, Avamar system ohlpch2bavas001 will be shut down and will remain temporarily unavailable while the DIMM in slot B7 is replaced.
+Perform the physical replacement of the failed Dual Inline Memory Module (DIMM) installed in memory slot B7 on Avamar system ohlpch2bavas001.
 
-Backup and restore operations managed by this Avamar system will not be available during the intervention.
+System information:
+- Hostname: ohlpch2bavas001
+- Serial number: 935QY64
+- Model: Avamar Data Store Gen5A
+- Affected component: DIMM B7
+- Scheduled date: Monday, July 27, 2026
+- Customer contact: Gervaix Christopher – gervaix@pbs-santander.com
 
-No active replication configuration was identified on this server, so no active replication activity is expected to be affected.
+Reported hardware errors:
 
-No data loss is expected.
+UEFI0339: The Dual Inline Memory Module (DIMM) in memory slot B7 is disabled because of initialization errors caused by uncorrectable memory errors, an invalid configuration, or other hardware conditions.
 
-Main risks:
-- Replacement DIMM failure or incompatibility.
-- Additional memory errors detected during system startup.
-- Extended system unavailability if the server does not complete POST successfully.
-- Avamar services failing to start correctly after the hardware replacement.
-- Backup or restore job failures if activity is not stopped before the intervention.
+UEFI0098: The memory Built-in Self-test (BIST) detected one or more errors on the DIMM installed in memory slot B7. The affected DIMM has been disabled as a result.
 
-Mitigation:
-The activity will be performed during an approved maintenance window.
+The activity requires an approved maintenance window. Backup and restore activities must be stopped before execution, as the Avamar system will be shut down and temporarily unavailable during the hardware replacement.
 
-Before the shutdown, the BaaS team will:
-- Confirm that no backup or restore jobs are running.
-- Validate the Avamar system status and service health.
-- Verify the latest checkpoint and maintenance task results.
-- Perform a controlled shutdown of the Avamar services and operating system.
+No active replication configuration or replicated clients were identified on this Avamar system during the CLI validation.
 
-The physical DIMM replacement will be performed by an authorized Dell Field Service Engineer.
+A physical component replacement by an authorized Dell Field Service Engineer is required.
 
-After the replacement, the BaaS team will validate:
-- Successful server startup and hardware initialization.
-- DIMM B7 detection and absence of new memory alerts.
-- GSAN, MCS, scheduler and related Avamar service status.
-- Full system access and readiness for backup and restore operations.
+
+
+Corrective hardware replacement is required for Avamar system ohlpch2bavas001.
+
+The DIMM installed in memory slot B7 has reported uncorrectable initialization and Built-in Self-test errors. The system firmware has disabled the affected memory module to prevent further hardware instability.
+
+The DIMM must be replaced according to the Dell documented procedure to restore the supported memory configuration, hardware redundancy, system stability, and full memory capacity.
