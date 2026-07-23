@@ -12,3 +12,39 @@ ls -lt /usr/local/avamar/var/client/*Replicate* 2>/dev/null | head -20
 
 
 mccli client show --domain=/MC_SYSTEM --recursive=true --verbose=true
+
+
+Impacted service: Backup as a Service.
+
+Planned impact:
+During the maintenance window, Avamar system ohlpch2bavas001 will be shut down and will remain temporarily unavailable while the DIMM in slot B7 is replaced.
+
+Backup and restore operations managed by this Avamar system will not be available during the intervention.
+
+No active replication configuration was identified on this server, so no active replication activity is expected to be affected.
+
+No data loss is expected.
+
+Main risks:
+- Replacement DIMM failure or incompatibility.
+- Additional memory errors detected during system startup.
+- Extended system unavailability if the server does not complete POST successfully.
+- Avamar services failing to start correctly after the hardware replacement.
+- Backup or restore job failures if activity is not stopped before the intervention.
+
+Mitigation:
+The activity will be performed during an approved maintenance window.
+
+Before the shutdown, the BaaS team will:
+- Confirm that no backup or restore jobs are running.
+- Validate the Avamar system status and service health.
+- Verify the latest checkpoint and maintenance task results.
+- Perform a controlled shutdown of the Avamar services and operating system.
+
+The physical DIMM replacement will be performed by an authorized Dell Field Service Engineer.
+
+After the replacement, the BaaS team will validate:
+- Successful server startup and hardware initialization.
+- DIMM B7 detection and absence of new memory alerts.
+- GSAN, MCS, scheduler and related Avamar service status.
+- Full system access and readiness for backup and restore operations.
