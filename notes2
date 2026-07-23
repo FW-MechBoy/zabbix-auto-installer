@@ -3,3 +3,9 @@ mccli client show \
   --recursive=true \
   --replicated=true \
   --verbose=true
+
+
+grep -RhiE 'dstaddr|destination.*(host|server)|target.*(host|server)' \
+  /usr/local/avamar/var/client/*Replicate*.log 2>/dev/null | tail -30
+
+ls -lt /usr/local/avamar/var/client/*Replicate* 2>/dev/null | head -20
