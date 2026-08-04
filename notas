@@ -1,1 +1,53 @@
+Hola Manu,
 
+Hemos revisado los archivos backupcompare correspondientes a los dos pares de Avamar, ejecutados en el sentido real de la replicación:
+
+cccvuk1apavs002 → cccvuk2apavs002
+cccvuk2apavs003 → cccvuk1apavs003
+
+A continuación, detallamos la información obtenida.
+
+Par 002: cccvuk1apavs002 → cccvuk2apavs002
+
+El reporte contiene un total de 436.869 backups:
+
+436.315 backups están presentes en ambos Avamar, lo que representa una coincidencia del 99,87 %.
+Para estos backups coinciden el root hash, cliente, dominio, fecha de creación, fecha de expiración, retención, tamaño y tipo de plugin.
+481 backups aparecen únicamente en el Avamar origen, con un tamaño lógico total aproximado de 2,29 TiB.
+395 fueron creados el mismo día de generación del reporte.
+Los 86 restantes corresponden al 20/07/2026 y tenían fechas de expiración próximas al horario de ejecución del informe.
+73 backups aparecen únicamente en el Avamar destino, con un tamaño lógico total aproximado de 12,27 TiB.
+72 corresponden a Avamar Checkpoint Backup del propio Avamar destino, dentro del dominio /MC_SYSTEM.
+El registro restante corresponde a un backup de filesystem de aproximadamente 35 MiB.
+
+Adicionalmente, se identificaron 84 checkpoints del Avamar origen, con un tamaño lógico aproximado de 13,99 TiB, que sí aparecen en ambos sistemas debido a la replicación.
+
+Para este par, la diferencia informada en los Data Domain es de aproximadamente 717.153 GiB de pre-comp, mientras que el backupcompare muestra que el inventario de backups completados se encuentra prácticamente alineado entre ambos Avamar.
+
+Par 003: cccvuk2apavs003 → cccvuk1apavs003
+
+El reporte contiene un total de 299.160 backups:
+
+298.413 backups están presentes en ambos Avamar, lo que representa una coincidencia del 99,75 %.
+También en este caso coinciden los root hashes y los principales atributos de los backups presentes en ambos sistemas.
+669 backups aparecen únicamente en el Avamar origen, con un tamaño lógico total aproximado de 10,25 TiB.
+600 fueron creados el mismo día de generación del reporte.
+67 corresponden al 20/07/2026 y representan un volumen reducido.
+Dos backups de filesystem concentran aproximadamente 9,58 TiB y tenían fecha de expiración a las 19:00 UTC del 04/08/2026. El reporte fue generado a las 19:21 UTC.
+78 backups aparecen únicamente en el Avamar destino, con un tamaño lógico total aproximado de 10,66 TiB.
+72 corresponden a Avamar Checkpoint Backup del propio Avamar destino, dentro de /MC_SYSTEM.
+Los otros seis corresponden a backups de filesystem y representan aproximadamente 548 MiB.
+
+También se identificaron 72 checkpoints del Avamar origen, por aproximadamente 10,20 TiB, presentes en ambos sistemas.
+
+Para este par, la diferencia informada en los Data Domain es de aproximadamente 35.746 GiB de pre-comp.
+
+Resumen general
+
+En ambos pares, la comparación de root hashes muestra un grado de coincidencia superior al 99,7 %. No se observa una diferencia significativa en el inventario de backups completados entre los Avamar origen y destino.
+
+Los registros exclusivos del origen corresponden principalmente a backups recientes o a backups cuya expiración coincidía con el momento de ejecución de los reportes. Por otro lado, la mayor parte del volumen exclusivo de los destinos corresponde a los checkpoints locales generados por cada Avamar destino.
+
+Es importante considerar que el backupcompare compara el inventario lógico de backups completados y sus root hashes. Los valores de src_bytes del reporte no son directamente equivalentes a las métricas de pre-comp, espacio utilizado o deduplicación mostradas por el Data Domain.
+
+Por lo tanto, con la información de estos reportes se confirma que los backups completados están prácticamente sincronizados, pero no aparece una diferencia equivalente en el inventario de backups que se corresponda directamente con las diferencias de pre-comp observadas en los Data Domain.
