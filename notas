@@ -1,1 +1,5 @@
 
+sudo mkdir -p /home/admin/Scripts
+sudo cp -p /home/usrespro15051/dump_root_hashes.rb /home/admin/Scripts/
+sudo chown admin:admin /home/admin/Scripts/dump_root_hashes.rb
+sudo chmod 750 /home/admin/Scripts/dump_root_hashes.rb
