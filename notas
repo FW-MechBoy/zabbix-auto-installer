@@ -3,3 +3,10 @@ sudo mkdir -p /home/admin/Scripts
 sudo cp -p /home/usrespro15051/dump_root_hashes.rb /home/admin/Scripts/
 sudo chown admin:admin /home/admin/Scripts/dump_root_hashes.rb
 sudo chmod 750 /home/admin/Scripts/dump_root_hashes.rb
+
+
+mkdir -p /home/usrespro15051/RootHashes
+cp -p /home/admin/Scripts/*.csv.gz /home/usrespro15051/RootHashes/
+chown -R usrespro15051 /home/usrespro15051/RootHashes
+chmod -R 755 /home/usrespro15051/RootHashes
+ls -lh /home/usrespro15051/RootHashes
