@@ -1,23 +1,27 @@
 Hola Pablo,
 
-Revisé únicamente los dos archivos backupcompare nuevos, generados el 06/08/2026, para validar las diferencias actuales entre cada Avamar origen y su réplica.
+Analicé íntegramente los dos archivos backupcompare generados el 06/08/2026, sin aplicar filtros de fecha.
 
-cccvuk1apavs002 → cccvuk2apavs002.uk.cloudcenter.corp
+cccvuk1apavs002.uk.cloudcenter.corp to cccvuk2apavs002.uk.cloudcenter.corp
+B: 437.837 backups — 4.727.822,682 GiB
+S: 1.590 backups — 46.783,204 GiB
+D: 73 backups — 12.619,533 GiB
 
-437.837 backups están presentes en ambos sistemas.
-1.590 backups aparecen únicamente en el origen, por 46.783,204 GiB.
-73 backups aparecen únicamente en la réplica, por 12.619,533 GiB.
-De los 73 backups exclusivos de la réplica, 72 corresponden a checkpoints del cliente avamar-1716215636, dominio /MC_SYSTEM, por 12.619,498 GiB.
-El resultado neto muestra 34.163,672 GiB adicionales en el origen, no en la réplica.
+Los backups en estado B coinciden en root hash, cliente, dominio, fechas, retención, tamaño y plugin. Solo se identificaron 1.292 diferencias de label, sin diferencias de contenido.
+De los 73 backups exclusivos del destino, 72 son checkpoints del cliente avamar-1716215636, dominio /MC_SYSTEM, por 12.619,498 GiB. Fueron creados entre el 01/08/2026 y el 06/08/2026 y expiran entre el 07/08/2026 y el 12/08/2026.
+El backup restante corresponde a srvelkpvlsk00.santanderuk.corp, por 0,034 GiB.
+En este par, el volumen lógico exclusivo es 34.163,672 GiB mayor en el origen.
 
-cccvuk2apavs003 → cccvuk1apavs003.uk.cloudcenter.corp
+cccvuk2apavs003.uk.cloudcenter.corp to cccvuk1apavs003.uk.cloudcenter.corp
+B: 300.041 backups — 3.572.489,466 GiB
+S: 295 backups — 165,620 GiB
+D: 78 backups — 10.960,039 GiB
+Los backups en estado B coinciden en todos los campos relevantes. Solo se identificaron 1.879 diferencias de label, sin diferencias de contenido.
+De los 78 backups exclusivos del destino, 72 son checkpoints del cliente avamar-1716215979, dominio /MC_SYSTEM, por 10.959,503 GiB. Fueron creados entre el 01/08/2026 y el 06/08/2026 y expiran entre el 07/08/2026 y el 12/08/2026.
+Los otros seis corresponden a backups Linux File System, por un total de 0,535 GiB, asociados a:
 
-300.041 backups están presentes en ambos sistemas.
-295 backups aparecen únicamente en el origen, por 165,620 GiB.
-78 backups aparecen únicamente en la réplica, por 10.960,039 GiB.
-De los 78 backups exclusivos de la réplica, 72 corresponden a checkpoints del cliente avamar-1716215979, dominio /MC_SYSTEM, por 10.959,503 GiB.
-El resultado neto muestra 10.794,419 GiB adicionales en la réplica, prácticamente en su totalidad asociados a esos checkpoints locales.
+srvalmpvlsk63.santanderuk.corp
+srvalmpvlsk60.santanderuk.corp
+srvalmpvlsk64.santanderuk.corp
 
-En los backups presentes en ambos Avamar no se encontraron diferencias de root hash, tamaño, cliente, dominio, fechas, retención ni plugin. Las únicas variaciones observadas corresponden al número de label.
-
-En conclusión, para el par 002 el backupcompare muestra mayor volumen exclusivo en el origen. Para el par 003 sí se observa mayor volumen exclusivo en la réplica, asociado principalmente a checkpoints locales.
+En este par, el volumen lógico exclusivo es 10.794,419 GiB mayor en el destino, principalmente por los checkpoints mencionados.
